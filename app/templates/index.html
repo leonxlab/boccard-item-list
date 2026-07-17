@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% if selected_file %}
+        <div class="table-page">
+            <div class="data-region">
+                <form id="filterBar" method="get" class="filter-bar">
+                    <input type="hidden" name="file_id" value="{{ selected_file.id }}">
+                    <label class="keyword-search">
+                        <span class="search-icon dark"></span>
+                        <input type="search" name="q" value="{{ query }}" placeholder="Search by any keyword..." data-i18n-placeholder="searchByAnyKeyword">
+                    </label>
+                    <label>
+                        <span data-i18n="filterByTagNumber">Filter by Tag Number</span>
+                        <select name="field">
+                            <option value="" data-i18n="all">All</option>
+                            <option value="tag_number" {% if field == 'tag_number' %}selected{% endif %}>Tag Number</option>
+                            <option value="boccard_item_number" {% if field == 'boccard_item_number' %}selected{% endif %}>Boccard Item</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span data-i18n="filterByDesignation">Filter by Designation</span>
+                        <select name="designation_filter">
+                            <option value="" data-i18n="all">All</option>
+                            {% for option in filter_options.designations %}
+                                <option value="{{ option }}" {% if designation_filter == option %}selected{% endif %}>{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>
+                        <span data-i18n="filterByRemarks">Filter by Remarks</span>
+                        <select name="remarks_filter">
+                            <option value="" data-i18n="all">All</option>
+                            {% for option in filter_options.remarks %}
+                                <option value="{{ option }}" {% if remarks_filter == option %}selected{% endif %}>{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <button type="submit" class="more-filter"><span class="filter-icon"></span><span data-i18n="apply">Apply</span></button>
+                </form>
+
+                <form id="bulkDeleteForm" method="post" action="{{ url_for('bulk_delete_records_route') }}" class="bulk-actions" hidden>
+                    <button type="submit" class="outline-danger" data-i18n="deleteSelected">Delete Selected</button>
+                    <span data-i18n="selectRowsThenRunAction">Select rows in the table, then run the action.</span>
+                </form>
+
+                {% if records %}
+                    <div class="table-controls">
+                        <button id="toggleDetailsColumns" class="show-more-btn" type="button" aria-expanded="false" data-i18n="showMoreDetails">Show More Details</button>
+                    </div>
+                {% endif %}
+
+                <div id="recordsTable" class="table-shell" tabindex="-1">
+                    {% if records %}
+                        <table class="records-table">
+                            <thead>
+                                <tr>
+                                    <th class="bulk-column" hidden><input type="checkbox" id="selectAllRecords" aria-label="Select all records"></th>
+                                    <th data-i18n="remarksInPidDatabase">Remarks in P&amp;ID Database</th>
+                                    <th>Boccard Item Number</th>
+                                    <th data-i18n="tagNumber">Tag Number</th>
+                                    <th data-i18n="designation">Designation</th>
+                                    {% for key in detail_keys %}
+                                        <th class="detail-column">{{ key|replace('_', ' ')|title }}</th>
+                                    {% endfor %}
+                                    <th class="detail-column" data-i18n="createdAt">Created At</th>
+                                    <th class="detail-column" data-i18n="updatedAt">Updated At</th>
+                                    <th class="detail-column" data-i18n="sourceFile">Source File</th>
+                                    <th class="detail-column" data-i18n="rowNumber">Row Number</th>
+                                    <th class="detail-column" data-i18n="status">Status</th>
+                                    <th data-i18n="actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in records %}
+                                    <tr>
+                                        <td class="bulk-column" hidden><input type="checkbox" name="record_ids" value="{{ record.id }}" form="bulkDeleteForm" aria-label="Select record {{ record.id }}"></td>
+                                        <td>{{ record.remarks_in_pid or '-' }}</td>
+                                        <td>{{ record.boccard_item_number or '-' }}</td>
+                                        <td>{{ record.tag_number or '-' }}</td>
+                                        <td>{{ record.designation or '-' }}</td>
+                                        {% for key in detail_keys %}
+                                            <td class="detail-column">{{ record.extra_data.get(key, '-') }}</td>
+                                        {% endfor %}
+                                        <td class="detail-column">{{ record.created_at|replace('T', ' ') }}</td>
+                                        <td class="detail-column">{{ record.updated_at|replace('T', ' ') }}</td>
+                                        <td class="detail-column">{{ selected_file.original_name }}</td>
+                                        <td class="detail-column">{{ record.id }}</td>
+                                        <td class="detail-column"><span class="status-pill" data-i18n="active">Active</span></td>
+                                        <td>
+                                            <div class="action-group">
+                                                <a class="small-action edit-action" href="{{ url_for('edit_record', record_id=record.id) }}" aria-label="Edit record" data-i18n="edit">Edit</a>
+                                                <form method="post" action="{{ url_for('delete_record_route', record_id=record.id) }}">
+                                                    <button type="submit" class="small-action delete-action" aria-label="Delete record" data-i18n="delete">Delete</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="empty-state">
+                            <h2 data-i18n="noRecordsFound">No records found</h2>
+                            <p data-i18n="tryDifferentSearch">Try a different search term or upload another workbook.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="table-footer">
+                    <span data-i18n="showingEntries" data-count="{{ records|length }}">Showing {{ records|length }} of {{ records|length }} entries</span>
+                    <span>Scroll inside the table to review all rows and columns.</span>
+                </div>
+            </div>
+
+            <aside class="info-rail">
+                <section class="rail-card">
+                    <h3><span class="file-dot"></span><span data-i18n="activeTabInfo">Active Tab Info</span></h3>
+                    <dl>
+                        <dt data-i18n="fileName">File Name</dt>
+                        <dd>{{ selected_file.original_name }}</dd>
+                        <dt>Uploaded At</dt>
+                        <dd>{{ selected_file.uploaded_at[:10] if selected_file.uploaded_at else '-' }}</dd>
+                        <dt data-i18n="totalRecords">Total Records</dt>
+                        <dd>{{ records|length }}</dd>
+                        <dt data-i18n="status">Status</dt>
+                        <dd><span class="status-pill" data-i18n="imported">Imported</span></dd>
+                    </dl>
+                </section>
+
+                <section class="rail-card">
+                    <h3><span class="bolt-dot"></span><span data-i18n="quickActions">Quick Actions</span></h3>
+                    <a class="rail-button" href="{{ url_for('export_file_route', file_id=selected_file.id) }}" data-i18n="exportCurrentTab">Export Current Tab</a>
+                    <button class="rail-button" type="button" onclick="window.location.reload()" data-i18n="refreshData">Refresh Data</button>
+                </section>
+
+                <section class="rail-card">
+                    <h3><span class="tip-dot"></span><span data-i18n="tips">Tips</span></h3>
+                    <p>Use the search box to quickly find any record across this tab.</p>
+                    <p>Click "Show More Details" once to add all detail columns to the right side of the table.</p>
+                </section>
+            </aside>
+        </div>
+    {% else %}
+        <div class="empty-state start-state">
+            <h2 data-i18n="noWorkbookLoaded">No workbook loaded yet</h2>
+            <p>Upload an Excel file to start reviewing your item list.</p>
+            <button type="button" class="primary-btn" onclick="document.getElementById('uploadModal').showModal()" data-i18n="uploadExcel">Upload Excel</button>
+        </div>
+    {% endif %}
+{% endblock %}
