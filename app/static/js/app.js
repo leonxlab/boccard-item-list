@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+    initSplashScreen();
     initPageControls();
     initPartialNavigation();
     initLanguageToggle();
@@ -6,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function initPageControls() {
+    syncDeviceNameInputs();
     initUploadFileControl();
     initDetailsToggle();
     initSidebarToggle();
@@ -13,9 +15,323 @@ function initPageControls() {
     initDataActions();
     initBulkSelect();
     initDeleteFileDialog();
+    initDevicePanel();
+    initDashboardSearchSuggestions();
     initEditTabCloseButtons();
     initTabReorder();
     applyLanguage(getCurrentLanguage());
+    startDeviceHeartbeat();
+}
+
+function getDeviceName() {
+    var stored = localStorage.getItem('boccardDeviceName');
+    if (stored) {
+        return stored;
+    }
+
+    var suffix = Math.random().toString(16).slice(2, 8).toUpperCase();
+    var deviceName = 'Device ' + suffix;
+    localStorage.setItem('boccardDeviceName', deviceName);
+    return deviceName;
+}
+
+function getDeviceId() {
+    var stored = localStorage.getItem('boccardDeviceId');
+    if (stored) {
+        return stored;
+    }
+
+    var cryptoApi = window.crypto || window.msCrypto;
+    var id = 'dev-' + Math.random().toString(16).slice(2, 10).toUpperCase();
+    if (cryptoApi && cryptoApi.getRandomValues) {
+        var values = new Uint32Array(2);
+        cryptoApi.getRandomValues(values);
+        id = 'dev-' + values[0].toString(16).toUpperCase().padStart(8, '0') + values[1].toString(16).toUpperCase().padStart(8, '0');
+    }
+    localStorage.setItem('boccardDeviceId', id);
+    return id;
+}
+
+var SPLASH_TTL_MS = 24 * 60 * 60 * 1000; // 24 jam
+
+function shouldShowSplash() {
+    var lastShown = localStorage.getItem('boccardSplashLastShown');
+    if (!lastShown) {
+        return true;
+    }
+    var elapsed = Date.now() - parseInt(lastShown, 10);
+    return isNaN(elapsed) || elapsed > SPLASH_TTL_MS;
+}
+
+function markSplashShown() {
+    localStorage.setItem('boccardSplashLastShown', Date.now().toString());
+}
+
+function initSplashScreen() {
+    var splash = document.getElementById('splashScreen');
+    if (!splash) {
+        return;
+    }
+
+    var deviceName = getDeviceName();
+    var deviceId = getDeviceId();
+    var nameTarget = splash.querySelector('[data-splash-device-name]');
+    var idTarget = splash.querySelector('[data-splash-device-id]');
+    if (nameTarget) {
+        nameTarget.textContent = deviceName;
+    }
+    if (idTarget) {
+        idTarget.textContent = deviceId;
+    }
+
+    if (!shouldShowSplash()) {
+        splash.remove();
+        return;
+    }
+
+    markSplashShown();
+
+    window.requestAnimationFrame(function () {
+        window.requestAnimationFrame(function () {
+            window.setTimeout(function () {
+                splash.classList.add('splash-done');
+                window.setTimeout(function () {
+                    splash.remove();
+                }, 420);
+            }, 1800);
+        });
+    });
+}
+
+function syncDeviceNameInputs() {
+    var deviceName = getDeviceName();
+    var deviceId = getDeviceId();
+    document.querySelectorAll('form').forEach(function (form) {
+        if ((form.method || 'get').toLowerCase() === 'get') {
+            return;
+        }
+        var input = form.querySelector('input[name="device_name"]');
+        if (!input) {
+            input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'device_name';
+            form.appendChild(input);
+        }
+        input.value = deviceName;
+
+        var idInput = form.querySelector('input[name="device_id"]');
+        if (!idInput) {
+            idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'device_id';
+            form.appendChild(idInput);
+        }
+        idInput.value = deviceId;
+    });
+}
+
+var deviceHeartbeatStarted = false;
+
+function startDeviceHeartbeat() {
+    if (deviceHeartbeatStarted) {
+        return;
+    }
+    deviceHeartbeatStarted = true;
+
+    sendDeviceHeartbeat();
+    window.setInterval(sendDeviceHeartbeat, 30000);
+}
+
+function sendDeviceHeartbeat() {
+    fetch('/devices/heartbeat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'fetch',
+            'X-Device-Name': getDeviceName(),
+            'X-Device-ID': getDeviceId()
+        },
+        body: JSON.stringify({ ok: true })
+    }).then(function () {
+        refreshDeviceList();
+    }).catch(function () {});
+}
+
+function initDevicePanel() {
+    var panel = document.getElementById('devicePanel');
+    var toggle = document.getElementById('devicePanelToggle');
+    if (!panel || !toggle || panel.dataset.ready === 'true') {
+        return;
+    }
+
+    panel.dataset.ready = 'true';
+    var stored = localStorage.getItem('boccardDevicePanelOpen');
+    setDevicePanelOpen(panel, toggle, stored !== 'false');
+
+    toggle.addEventListener('click', function () {
+        var nextOpen = panel.classList.contains('collapsed');
+        setDevicePanelOpen(panel, toggle, nextOpen);
+        localStorage.setItem('boccardDevicePanelOpen', String(nextOpen));
+    });
+
+    refreshDeviceList();
+}
+
+function setDevicePanelOpen(panel, toggle, open) {
+    panel.classList.toggle('collapsed', !open);
+    toggle.setAttribute('aria-expanded', String(open));
+}
+
+function refreshDeviceList() {
+    var list = document.getElementById('deviceList');
+    var panel = document.getElementById('devicePanel');
+    if (!list || !panel) {
+        return;
+    }
+
+    fetch('/devices', {
+        headers: {
+            'X-Requested-With': 'fetch',
+            'X-Device-Name': getDeviceName(),
+            'X-Device-ID': getDeviceId()
+        }
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error('Device list failed');
+            }
+            return response.json();
+        })
+        .then(function (payload) {
+            renderDeviceList(list, payload.devices || []);
+        })
+        .catch(function () {});
+}
+
+function renderDeviceList(list, devices) {
+    list.innerHTML = '';
+    var onlineCount = devices.filter(function (device) {
+        return device.online;
+    }).length;
+    var countTarget = document.querySelector('.device-panel-head span');
+    if (countTarget) {
+        countTarget.textContent = onlineCount + ' online';
+    }
+
+    if (!devices.length) {
+        var empty = document.createElement('p');
+        empty.className = 'muted';
+        empty.textContent = 'No devices yet.';
+        list.appendChild(empty);
+        return;
+    }
+
+    devices.forEach(function (device) {
+        var item = document.createElement('div');
+        item.className = 'device-item ' + (device.online ? 'online' : 'offline');
+
+        var dot = document.createElement('span');
+        dot.className = 'device-status-dot';
+
+        var copy = document.createElement('div');
+        var name = document.createElement('strong');
+        name.textContent = device.device_name || 'Unknown Device';
+        var id = document.createElement('small');
+        id.textContent = device.device_id || '-';
+        copy.appendChild(name);
+        copy.appendChild(id);
+
+        var state = document.createElement('em');
+        state.textContent = device.online ? 'Online' : 'Offline';
+
+        item.appendChild(dot);
+        item.appendChild(copy);
+        item.appendChild(state);
+        list.appendChild(item);
+    });
+}
+
+function initDashboardSearchSuggestions() {
+    var input = document.getElementById('dashboardSearchInput');
+    var list = document.getElementById('dashboardSearchSuggestions');
+    if (!input || !list || input.dataset.suggestionsReady === 'true') {
+        return;
+    }
+
+    input.dataset.suggestionsReady = 'true';
+    var debounceTimer = null;
+
+    input.addEventListener('input', function () {
+        window.clearTimeout(debounceTimer);
+        debounceTimer = window.setTimeout(function () {
+            loadDashboardSearchSuggestions(input, list);
+        }, 140);
+    });
+
+    input.addEventListener('focus', function () {
+        loadDashboardSearchSuggestions(input, list);
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!event.target.closest('.keyword-search')) {
+            list.hidden = true;
+        }
+    });
+}
+
+function loadDashboardSearchSuggestions(input, list) {
+    var value = input.value.trim();
+    var fileId = input.dataset.fileId;
+    if (!value || !fileId) {
+        list.hidden = true;
+        list.innerHTML = '';
+        return;
+    }
+
+    var url = (input.dataset.suggestionsUrl || '/search-suggestions') +
+        '?file_id=' + encodeURIComponent(fileId) +
+        '&q=' + encodeURIComponent(value);
+
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'fetch',
+            'X-Device-Name': getDeviceName(),
+            'X-Device-ID': getDeviceId()
+        }
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error('Suggestion request failed');
+            }
+            return response.json();
+        })
+        .then(function (payload) {
+            renderDashboardSearchSuggestions(input, list, payload.suggestions || []);
+        })
+        .catch(function () {
+            list.hidden = true;
+        });
+}
+
+function renderDashboardSearchSuggestions(input, list, suggestions) {
+    list.innerHTML = '';
+    if (!suggestions.length) {
+        list.hidden = true;
+        return;
+    }
+
+    suggestions.slice(0, 8).forEach(function (suggestion) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = suggestion;
+        button.addEventListener('click', function () {
+            input.value = suggestion;
+            list.hidden = true;
+            input.form?.requestSubmit();
+        });
+        list.appendChild(button);
+    });
+    list.hidden = false;
 }
 
 var translations = {
@@ -24,9 +340,14 @@ var translations = {
         backToDashboard: 'Back to Dashboard',
         all: 'All',
         active: 'Active',
+        activeFileTabs: 'Active file tabs',
         activeTabInfo: 'Active Tab Info',
         actions: 'Actions',
         apply: 'Apply',
+        auditLogPersistent: 'Persistent action history',
+        autosaveSnapshots: 'Autosave backups',
+        availableBackups: 'Available backups',
+        backupRecovery: 'Backup & Recovery',
         browse: 'Browse',
         bulkActions: 'Bulk Actions',
         cancel: 'Cancel',
@@ -34,6 +355,9 @@ var translations = {
         closeUploadDialog: 'Close upload dialog',
         createdAt: 'Created At',
         dashboard: 'Dashboard',
+        dataSafety: 'Data Safety',
+        dataSource: 'Data source',
+        dataSourceLocal: 'Local SQLite database and uploaded Excel files',
         dataManagement: 'DATA MANAGEMENT',
         delete: 'Delete',
         deleteFile: 'Delete File',
@@ -41,8 +365,13 @@ var translations = {
         deleteRecord: 'Delete Record',
         deleteSelected: 'Delete Selected',
         designation: 'Designation',
+        dragTabOrdering: 'Drag tab ordering',
         edit: 'Edit',
+        enabled: 'Enabled',
+        enabledAfterChanges: 'Enabled after import, edit, delete, and repair',
         fileName: 'File Name',
+        fileCloseBehavior: 'File close behavior',
+        fileCloseTrash: 'Move to trash, keep source workbook and snapshot',
         filterByDesignation: 'Filter by Designation',
         filterByRemarks: 'Filter by Remarks',
         filterByTagNumber: 'Filter by Tag Number',
@@ -50,7 +379,9 @@ var translations = {
         exportCurrentTab: 'Export Current Tab',
         hideDetails: 'Hide Details',
         imported: 'Imported',
+        interface: 'Interface',
         itemList: 'Item List',
+        languageSwitch: 'Language switch',
         noFileChosen: 'No file chosen',
         noRecordsFound: 'No records found',
         noWorkbookLoaded: 'No workbook loaded yet',
@@ -65,28 +396,43 @@ var translations = {
         searchByAnyKeyword: 'Search by any keyword...',
         selectRowsThenRunAction: 'Select rows in the table, then run the action.',
         settings: 'Settings',
+        snapshotFolder: 'Temp backup folder',
         sourceFile: 'Source File',
         status: 'Status',
+        storedInBrowserLocalStorage: 'Stored in browser local storage',
         showMoreDetails: 'Show More Details',
         showingEntries: 'Showing {count} of {count} entries',
+        supportedUploadFormat: 'Supported upload format',
+        supportedUploadValue: '.xlsx workbooks',
         switchLanguage: 'Switch language',
         system: 'SYSTEM',
         tagNumber: 'Tag Number',
+        tempSnapshotFolder: 'temp/*.json',
         tips: 'Tips',
         totalRecords: 'Total Records',
         trash: 'Trash',
+        trashMode: 'Trash mode',
+        trashModeRestore: 'Deleted files and records can be restored',
         tryDifferentSearch: 'Try a different search term or upload another workbook.',
         updatedAt: 'Updated At',
-        uploadExcel: 'Upload Excel'
+        uploadExcel: 'Upload Excel',
+        workbook: 'Workbook',
+        languageSwitchValue: 'English / Indonesian',
+        persistentEditTabs: 'Persistent edit tabs'
     },
     id: {
         auditLog: 'Log Audit',
         backToDashboard: 'Kembali ke Dashboard',
         all: 'Semua',
         active: 'Aktif',
+        activeFileTabs: 'Tab file aktif',
         activeTabInfo: 'Info Tab Aktif',
         actions: 'Aksi',
         apply: 'Terapkan',
+        auditLogPersistent: 'Riwayat aksi tersimpan permanen',
+        autosaveSnapshots: 'Backup autosave',
+        availableBackups: 'Backup tersedia',
+        backupRecovery: 'Backup & Pemulihan',
         browse: 'Pilih',
         bulkActions: 'Aksi Massal',
         cancel: 'Batal',
@@ -94,6 +440,9 @@ var translations = {
         closeUploadDialog: 'Tutup dialog upload',
         createdAt: 'Dibuat Pada',
         dashboard: 'Dashboard',
+        dataSafety: 'Keamanan Data',
+        dataSource: 'Sumber data',
+        dataSourceLocal: 'Database SQLite lokal dan file Excel yang diupload',
         dataManagement: 'MANAJEMEN DATA',
         delete: 'Hapus',
         deleteFile: 'Hapus File',
@@ -101,8 +450,13 @@ var translations = {
         deleteRecord: 'Hapus Record',
         deleteSelected: 'Hapus yang Dipilih',
         designation: 'Designation',
+        dragTabOrdering: 'Urutan tab dengan drag',
         edit: 'Edit',
+        enabled: 'Aktif',
+        enabledAfterChanges: 'Aktif setelah import, edit, hapus, dan repair',
         fileName: 'Nama File',
+        fileCloseBehavior: 'Perilaku tutup file',
+        fileCloseTrash: 'Pindahkan ke sampah, simpan workbook sumber dan snapshot',
         filterByDesignation: 'Filter berdasarkan Designation',
         filterByRemarks: 'Filter berdasarkan Remarks',
         filterByTagNumber: 'Filter berdasarkan Tag Number',
@@ -110,7 +464,9 @@ var translations = {
         exportCurrentTab: 'Ekspor Tab Saat Ini',
         hideDetails: 'Sembunyikan Detail',
         imported: 'Diimpor',
+        interface: 'Antarmuka',
         itemList: 'Daftar Item',
+        languageSwitch: 'Pilihan bahasa',
         noFileChosen: 'Belum ada file dipilih',
         noRecordsFound: 'Record tidak ditemukan',
         noWorkbookLoaded: 'Belum ada workbook dimuat',
@@ -125,19 +481,29 @@ var translations = {
         searchByAnyKeyword: 'Cari dengan kata kunci...',
         selectRowsThenRunAction: 'Pilih baris di tabel, lalu jalankan aksi.',
         settings: 'Pengaturan',
+        snapshotFolder: 'Folder temp backup',
         sourceFile: 'File Sumber',
         status: 'Status',
+        storedInBrowserLocalStorage: 'Disimpan di local storage browser',
         showMoreDetails: 'Tampilkan Detail',
         showingEntries: 'Menampilkan {count} dari {count} entri',
+        supportedUploadFormat: 'Format upload yang didukung',
+        supportedUploadValue: 'Workbook .xlsx',
         switchLanguage: 'Ganti bahasa',
         system: 'SISTEM',
         tagNumber: 'Tag Number',
+        tempSnapshotFolder: 'temp/*.json',
         tips: 'Tips',
         totalRecords: 'Total Record',
         trash: 'Sampah',
+        trashMode: 'Mode sampah',
+        trashModeRestore: 'File dan record yang dihapus bisa dipulihkan',
         tryDifferentSearch: 'Coba kata kunci lain atau upload workbook lain.',
         updatedAt: 'Diperbarui Pada',
-        uploadExcel: 'Upload Excel'
+        uploadExcel: 'Upload Excel',
+        workbook: 'Workbook',
+        languageSwitchValue: 'Bahasa Inggris / Bahasa Indonesia',
+        persistentEditTabs: 'Tab edit persisten'
     }
 };
 
@@ -267,8 +633,19 @@ function initSidebarToggle() {
     button.dataset.ready = 'true';
     button.addEventListener('click', function (event) {
         event.preventDefault();
-        document.body.classList.toggle('sidebar-collapsed');
-        button.setAttribute('aria-expanded', String(!document.body.classList.contains('sidebar-collapsed')));
+        if (document.body.classList.contains('sidebar-transitioning')) {
+            return;
+        }
+
+        document.body.classList.add('sidebar-transitioning');
+        window.requestAnimationFrame(function () {
+            document.body.classList.toggle('sidebar-collapsed');
+            button.setAttribute('aria-expanded', String(!document.body.classList.contains('sidebar-collapsed')));
+
+            window.setTimeout(function () {
+                document.body.classList.remove('sidebar-transitioning');
+            }, 180);
+        });
     });
 }
 
@@ -402,12 +779,17 @@ function initPartialNavigation() {
 
     document.addEventListener('submit', function (event) {
         var form = event.target;
-        if (!(form instanceof HTMLFormElement) || form.hasAttribute('data-normal-submit')) {
+        if (!(form instanceof HTMLFormElement)) {
             return;
         }
 
         if (form.id === 'deleteFileForm') {
             clearTabsForDeletedFile(form.dataset.deleteFileId);
+            return;
+        }
+
+        if (form.hasAttribute('data-normal-submit')) {
+            return;
         }
 
         event.preventDefault();
@@ -428,7 +810,7 @@ function shouldUseNormalNavigation(link) {
 }
 
 function loadPage(url, pushState) {
-    fetch(url, { headers: { 'X-Requested-With': 'fetch' } })
+    fetch(url, { headers: { 'X-Requested-With': 'fetch', 'X-Device-Name': getDeviceName(), 'X-Device-ID': getDeviceId() } })
         .then(function (response) {
             if (!response.ok) {
                 throw new Error('Request failed');
@@ -452,6 +834,11 @@ function submitForm(form, submitter) {
     var options = { method: method, headers: { 'X-Requested-With': 'fetch' } };
     var targetUrl = action;
     var formData = new FormData(form);
+    var savedEditTabId = getSavedEditTabId(form, submitter, method);
+    if (method !== 'GET') {
+        formData.set('device_name', getDeviceName());
+        formData.set('device_id', getDeviceId());
+    }
 
     if (form.id === 'deleteFileForm') {
         clearTabsForDeletedFile(form.dataset.deleteFileId);
@@ -481,12 +868,41 @@ function submitForm(form, submitter) {
             document.querySelectorAll('dialog[open]').forEach(function (dialog) {
                 dialog.close();
             });
+            if (savedEditTabId) {
+                closeStoredEditTab(savedEditTabId);
+            }
             replaceWorkspace(payload.html);
             window.history.pushState({}, '', payload.url);
         })
         .catch(function () {
             form.submit();
         });
+}
+
+function getSavedEditTabId(form, submitter, method) {
+    if (method !== 'POST' || !form.matches('.edit-page') || !form.dataset.editRecordId) {
+        return null;
+    }
+
+    var submitAction = (submitter && submitter.formAction) || form.action || '';
+    if (submitAction.includes('/delete/')) {
+        return null;
+    }
+
+    return 'edit:' + form.dataset.editRecordId;
+}
+
+function closeStoredEditTab(tabId) {
+    setStoredEditTabs(getStoredEditTabs().filter(function (item) {
+        return item.id !== tabId;
+    }));
+
+    document.querySelectorAll('[data-tab-id]').forEach(function (tab) {
+        if (tab.dataset.tabId === tabId) {
+            tab.remove();
+        }
+    });
+    saveCurrentTabOrder();
 }
 
 function replaceWorkspace(html) {
