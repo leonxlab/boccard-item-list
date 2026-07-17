@@ -7,9 +7,85 @@
     <link rel="shortcut icon" type="image/png" href="{{ url_for('favicon_route') }}?v=7">
     <link rel="icon" type="image/png" href="{{ url_for('favicon_route') }}?v=7">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=10">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=15">
+    <script>
+        (function () {
+            try {
+                var SPLASH_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 hari
+                var lastShown = localStorage.getItem('boccardSplashLastShown');
+                if (lastShown) {
+                    var elapsed = Date.now() - parseInt(lastShown, 10);
+                    if (!isNaN(elapsed) && elapsed <= SPLASH_TTL_MS) {
+                        document.documentElement.classList.add('skip-splash');
+                    }
+                }
+            } catch (e) {
+                // localStorage tidak tersedia; biarkan splash tampil seperti biasa
+            }
+        })();
+    </script>
 </head>
 <body>
+    {% set can_upload_workbook = files is not defined or files|length == 0 %}
+    <div id="splashScreen" class="splash-screen" role="status" aria-live="polite">
+        <div class="splash-panel">
+            <img class="splash-logo" src="{{ url_for('static', filename='images/white-logo.png') }}" alt="Boccard Item List">
+            <div class="splash-copy">
+                <h2>Boccard Item List</h2>
+                <dl>
+                    <dt>Device Name</dt>
+                    <dd data-splash-device-name>Loading</dd>
+                    <dt>Device ID</dt>
+                    <dd data-splash-device-id>Loading</dd>
+                </dl>
+            </div>
+            <p>Loading...</p>
+            <div class="splash-progress" aria-hidden="true"><span></span></div>
+        </div>
+    </div>
+    <script>
+        (function () {
+            function getStoredDeviceName() {
+                var stored = localStorage.getItem('boccardDeviceName');
+                if (stored) {
+                    return stored;
+                }
+                var deviceName = 'Device ' + Math.random().toString(16).slice(2, 8).toUpperCase();
+                localStorage.setItem('boccardDeviceName', deviceName);
+                return deviceName;
+            }
+
+            function getStoredDeviceId() {
+                var stored = localStorage.getItem('boccardDeviceId');
+                if (stored) {
+                    return stored;
+                }
+                var cryptoApi = window.crypto || window.msCrypto;
+                var id = 'dev-' + Math.random().toString(16).slice(2, 10).toUpperCase();
+                if (cryptoApi && cryptoApi.getRandomValues) {
+                    var values = new Uint32Array(2);
+                    cryptoApi.getRandomValues(values);
+                    id = 'dev-' + values[0].toString(16).toUpperCase().padStart(8, '0') + values[1].toString(16).toUpperCase().padStart(8, '0');
+                }
+                localStorage.setItem('boccardDeviceId', id);
+                return id;
+            }
+
+            var splash = document.getElementById('splashScreen');
+            if (!splash) {
+                return;
+            }
+            var nameTarget = splash.querySelector('[data-splash-device-name]');
+            var idTarget = splash.querySelector('[data-splash-device-id]');
+            if (nameTarget) {
+                nameTarget.textContent = getStoredDeviceName();
+            }
+            if (idTarget) {
+                idTarget.textContent = getStoredDeviceId();
+            }
+        })();
+    </script>
+
     <div class="app-shell">
         <header class="topbar">
             <div class="brand">
@@ -18,7 +94,7 @@
                 </button>
                 <img class="brand-logo" src="{{ url_for('static', filename='images/white-logo.png') }}" alt="Boccard Item List">
                 <div>
-                    <h1 data-i18n="itemList">Item List</h1>
+                    <h1>Item List</h1>
                 </div>
             </div>
 
@@ -35,10 +111,12 @@
                     <i class="fa-solid fa-globe" aria-hidden="true"></i>
                     <span data-language-label>ID</span>
                 </button>
-                <button class="upload-top" type="button" onclick="document.getElementById('uploadModal').showModal()">
-                    <i class="fa-solid fa-upload" aria-hidden="true"></i>
-                    <span data-i18n="uploadExcel">Upload Excel</span>
-                </button>
+                {% if can_upload_workbook %}
+                    <button class="upload-top" type="button" onclick="document.getElementById('uploadModal').showModal()">
+                        <i class="fa-solid fa-upload" aria-hidden="true"></i>
+                        <span data-i18n="uploadExcel">Upload Excel</span>
+                    </button>
+                {% endif %}
             </div>
         </header>
 
@@ -46,7 +124,9 @@
             <aside class="sidebar">
                 <nav class="side-nav">
                     <a href="{{ url_for('index') }}" class="side-link {% if active_tab == 'table' %}active{% endif %}"><i class="fa-solid fa-table-columns" aria-hidden="true"></i><span data-i18n="dashboard">Dashboard</span></a>
-                    <a href="#" class="side-link" onclick="document.getElementById('uploadModal').showModal(); return false;"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i><span data-i18n="uploadExcel">Upload Excel</span></a>
+                    {% if can_upload_workbook %}
+                        <a href="#" class="side-link" onclick="document.getElementById('uploadModal').showModal(); return false;"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i><span data-i18n="uploadExcel">Upload Excel</span></a>
+                    {% endif %}
                 </nav>
 
                 <div class="side-divider"></div>
@@ -143,37 +223,39 @@
         </div>
     </div>
 
-    <dialog id="uploadModal" class="upload-modal">
-        <form method="post" action="{{ url_for('index') }}" enctype="multipart/form-data">
-            <div class="modal-head">
-                <h2 data-i18n="uploadExcel">Upload Excel</h2>
-                <button type="button" class="modal-close" onclick="document.getElementById('uploadModal').close()" aria-label="Close upload dialog" data-i18n-aria-label="closeUploadDialog">
-                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                </button>
-            </div>
-            <label class="upload-picker" for="excelFileInput">
-                <span class="upload-picker-icon">
-                    <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
-                </span>
-                <span class="upload-picker-copy">
-                    <strong data-i18n="chooseExcelFile">Choose Excel file</strong>
-                    <small id="uploadFileName" data-i18n="noFileChosen">No file chosen</small>
-                </span>
-                <span class="upload-picker-action" data-i18n="browse">Browse</span>
-            </label>
-            <input id="excelFileInput" class="file-input" type="file" name="excel_file" accept=".xlsx" required>
-            <div class="modal-actions">
-                <button type="button" class="ghost-btn" onclick="document.getElementById('uploadModal').close()" data-i18n="cancel">Cancel</button>
-                <button type="submit" class="primary-btn">
-                    <i class="fa-solid fa-upload" aria-hidden="true"></i>
-                    <span data-i18n="uploadExcel">Upload Excel</span>
-                </button>
-            </div>
-        </form>
-    </dialog>
+    {% if can_upload_workbook %}
+        <dialog id="uploadModal" class="upload-modal">
+            <form method="post" action="{{ url_for('index') }}" enctype="multipart/form-data">
+                <div class="modal-head">
+                    <h2 data-i18n="uploadExcel">Upload Excel</h2>
+                    <button type="button" class="modal-close" onclick="document.getElementById('uploadModal').close()" aria-label="Close upload dialog" data-i18n-aria-label="closeUploadDialog">
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <label class="upload-picker" for="excelFileInput">
+                    <span class="upload-picker-icon">
+                        <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
+                    </span>
+                    <span class="upload-picker-copy">
+                        <strong data-i18n="chooseExcelFile">Choose Excel file</strong>
+                        <small id="uploadFileName" data-i18n="noFileChosen">No file chosen</small>
+                    </span>
+                    <span class="upload-picker-action" data-i18n="browse">Browse</span>
+                </label>
+                <input id="excelFileInput" class="file-input" type="file" name="excel_file" accept=".xlsx" required>
+                <div class="modal-actions">
+                    <button type="button" class="ghost-btn" onclick="document.getElementById('uploadModal').close()" data-i18n="cancel">Cancel</button>
+                    <button type="submit" class="primary-btn">
+                        <i class="fa-solid fa-upload" aria-hidden="true"></i>
+                        <span data-i18n="uploadExcel">Upload Excel</span>
+                    </button>
+                </div>
+            </form>
+        </dialog>
+    {% endif %}
 
     <dialog id="deleteFileDialog" class="confirm-dialog">
-        <form method="post" id="deleteFileForm">
+        <form method="post" id="deleteFileForm" data-normal-submit>
             <p data-i18n="deleteFilePrompt">Delete this file and all imported records?</p>
             <div class="dialog-actions">
                 <button type="button" class="ghost-btn" data-dialog-close data-i18n="cancel">Cancel</button>
@@ -182,6 +264,6 @@
         </form>
     </dialog>
 
-    <script src="{{ url_for('static', filename='js/app.js') }}?v=10"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=16"></script>
 </body>
 </html>
