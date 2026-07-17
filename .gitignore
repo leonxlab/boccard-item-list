@@ -1,8 +1,0 @@
-*.xlsx
-*.bat
-*.md
-*.txt
-!requirements.txt
-*.exe
-__pycache__/
-*.py[cod]
