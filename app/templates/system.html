@@ -77,8 +77,8 @@
                                         <td>{{ snapshot.updated_at|replace('T', ' ') }}</td>
                                         <td>{{ snapshot.size }} bytes</td>
                                         <td>
-                                            {% if snapshot.file_id %}
-                                                <form method="post" action="{{ url_for('restore_backup_route', file_id=snapshot.file_id) }}">
+                                            {% if snapshot.snapshot_name %}
+                                                <form method="post" action="{{ url_for('restore_backup_route', snapshot_name=snapshot.snapshot_name) }}">
                                                     <button class="small-action edit-action" type="submit">Restore</button>
                                                 </form>
                                             {% else %}

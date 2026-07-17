@@ -735,3 +735,739 @@ Traceback (most recent call last):
         ^
 sqlite3.OperationalError: no such table: devices
 127.0.0.1 - - [17/Jul/2026 09:34:49] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:35:21,210] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:35:21] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:35:21,546] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:35:21] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:35:49,523] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:35:49] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:35:49,841] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:35:49] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:36:36,509] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:36:36] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:36:36,824] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:36:36] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:37:36,269] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:37:36] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:37:36,590] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:37:36] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:38:36,256] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:38:36] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:38:36,576] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:38:36] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:39:36,266] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:39:36] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:39:36,576] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:39:36] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:39:43,273] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:39:43] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:39:43,585] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:39:43] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:40:10,258] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:40:10] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:40:10,586] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:40:10] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:40:40,241] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:40:40] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:40:40,563] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:40:40] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:41:17,573] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:41:17] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:41:17,899] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:41:17] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:42:36,556] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:42:36] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:42:36,806] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:42:36] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:43:36,254] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:43:36] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:43:36,566] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:43:36] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:43:51,156] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:43:51] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:43:51,484] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:43:51] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:44:10,237] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:44:10] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:44:10,547] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:44:10] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:44:49,092] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:44:49] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:44:49,418] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:44:49] "GET /devices HTTP/1.1" 500 -
+[2026-07-17 09:45:36,494] ERROR in app: Exception on /devices/heartbeat [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:45:36] "POST /devices/heartbeat HTTP/1.1" 500 -
+[2026-07-17 09:45:36,804] ERROR in app: Exception on /devices [GET]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 915, in full_dispatch_request
+    rv = self.preprocess_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1291, in preprocess_request
+    rv = self.ensure_sync(before_func)()
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 72, in track_device_presence
+    or "pid" in str(key).lower()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 66, in refresh_request_device_presence
+    for record in records
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 231, in upsert_device_presence
+            restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        conn = _connect()
+        ^
+sqlite3.OperationalError: no such table: devices
+127.0.0.1 - - [17/Jul/2026 09:45:36] "GET /devices HTTP/1.1" 500 -

@@ -2,6 +2,7 @@ import json
 import os
 import sqlite3
 from datetime import datetime
+from flask import g
 
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "app.db")
@@ -57,6 +58,8 @@ def init_db(upload_folder=None, temp_folder=None):
             entity_type TEXT NOT NULL,
             entity_id INTEGER,
             message TEXT NOT NULL,
+            device_id TEXT,
+            device_name TEXT,
             created_at TEXT NOT NULL
         )
         """
@@ -81,6 +84,12 @@ def init_db(upload_folder=None, temp_folder=None):
     if "deleted_at" not in columns:
         conn.execute("ALTER TABLE uploaded_files ADD COLUMN deleted_at TEXT")
 
+    audit_columns = {row[1] for row in conn.execute("PRAGMA table_info(audit_logs)").fetchall()}
+    if "device_id" not in audit_columns:
+        conn.execute("ALTER TABLE audit_logs ADD COLUMN device_id TEXT")
+    if "device_name" not in audit_columns:
+        conn.execute("ALTER TABLE audit_logs ADD COLUMN device_name TEXT")
+
     ordered_rows = conn.execute(
         "SELECT id, tab_order FROM uploaded_files ORDER BY tab_order ASC, uploaded_at ASC, id ASC"
     ).fetchall()
@@ -100,14 +109,25 @@ def _connect():
     return conn
 
 
-def log_action(action, entity_type, entity_id, message):
+def get_current_device():
+    try:
+        return getattr(g, "device_id", None), getattr(g, "device_name", None)
+    except RuntimeError:
+        return None, None
+
+def log_action(action, entity_type, entity_id, message, device_id=None, device_name=None):
+    if not device_id or not device_name:
+        req_dev_id, req_dev_name = get_current_device()
+        device_id = device_id or req_dev_id
+        device_name = device_name or req_dev_name
+
     conn = _connect()
     conn.execute(
         """
-        INSERT INTO audit_logs (action, entity_type, entity_id, message, created_at)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO audit_logs (action, entity_type, entity_id, message, device_id, device_name, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
-        (action, entity_type, entity_id, message, datetime.utcnow().isoformat()),
+        (action, entity_type, entity_id, message, device_id, device_name, datetime.utcnow().isoformat()),
     )
     conn.commit()
     conn.close()
@@ -180,9 +200,35 @@ def replace_records(file_id, rows):
 
 def write_temp_snapshot(file_id, rows):
     os.makedirs(TEMP_FOLDER, exist_ok=True)
-    snapshot_path = os.path.join(TEMP_FOLDER, f"{file_id}.json")
+    req_dev_id, req_dev_name = get_current_device()
+    device_id = req_dev_id or "unknown"
+    device_name = req_dev_name or "Unknown Device"
+    
+    timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+    filename = f"backup_{device_id}_{file_id}_{timestamp}.json"
+    snapshot_path = os.path.join(TEMP_FOLDER, filename)
+    
+    payload = {
+        "device_id": device_id,
+        "device_name": device_name,
+        "file_id": file_id,
+        "rows": rows
+    }
+    
     with open(snapshot_path, "w", encoding="utf-8") as handle:
-        json.dump(rows, handle, indent=2)
+        json.dump(payload, handle, indent=2)
+        
+    # Enforce max 3 backups per device
+    all_backups = []
+    for name in os.listdir(TEMP_FOLDER):
+        if name.startswith(f"backup_{device_id}_") and name.endswith(".json"):
+            path = os.path.join(TEMP_FOLDER, name)
+            all_backups.append((path, os.path.getmtime(path)))
+            
+    all_backups.sort(key=lambda x: x[1], reverse=True)
+    if len(all_backups) > 3:
+        for backup_path, _ in all_backups[3:]:
+            os.remove(backup_path)
 
 
 def write_temp_snapshot_from_db(file_id):
@@ -198,14 +244,41 @@ def get_temp_snapshots():
         if not name.endswith(".json"):
             continue
         path = os.path.join(TEMP_FOLDER, name)
-        try:
-            file_id = int(os.path.splitext(name)[0])
-        except ValueError:
-            file_id = None
+        
+        # Try to parse new format backup_{device_id}_{file_id}_{timestamp}.json
+        parts = name.replace(".json", "").split("_")
+        device_id = "unknown"
+        device_name = "Unknown Device"
+        file_id = None
+        
+        if len(parts) >= 4 and parts[0] == "backup":
+            device_id = parts[1]
+            try:
+                file_id = int(parts[2])
+            except ValueError:
+                pass
+            
+            # Read payload for accurate device name if possible
+            try:
+                with open(path, "r", encoding="utf-8") as handle:
+                    data = json.load(handle)
+                    device_name = data.get("device_name", device_name)
+                    file_id = data.get("file_id", file_id)
+            except Exception:
+                pass
+        else:
+            try:
+                file_id = int(os.path.splitext(name)[0])
+            except ValueError:
+                pass
+
         snapshots.append(
             {
+                "snapshot_name": name,
                 "file_id": file_id,
-                "name": name,
+                "device_id": device_id,
+                "device_name": device_name,
+                "name": f"{device_name} ({device_id})" if device_id != "unknown" else name,
                 "size": os.path.getsize(path),
                 "updated_at": datetime.utcfromtimestamp(os.path.getmtime(path)).isoformat(),
             }
@@ -213,26 +286,43 @@ def get_temp_snapshots():
     return sorted(snapshots, key=lambda item: item["updated_at"], reverse=True)
 
 
-def restore_records_from_snapshot(file_id):
-    snapshot_path = os.path.abspath(os.path.join(TEMP_FOLDER, f"{file_id}.json"))
+def restore_records_from_snapshot(snapshot_name):
+    snapshot_path = os.path.abspath(os.path.join(TEMP_FOLDER, snapshot_name))
     temp_root = os.path.abspath(TEMP_FOLDER)
     if not snapshot_path.startswith(temp_root + os.sep) or not os.path.exists(snapshot_path):
         return None
 
     with open(snapshot_path, "r", encoding="utf-8") as handle:
-        rows = json.load(handle)
+        data = json.load(handle)
+        
+    # Handle old format (raw list) vs new format (dict with payload)
+    if isinstance(data, dict) and "rows" in data:
+        rows = data["rows"]
+        file_id = data.get("file_id")
+        backup_device_id = data.get("device_id")
+        
+        req_dev_id, _ = get_current_device()
+        if backup_device_id and req_dev_id and backup_device_id != req_dev_id:
+            # Cannot restore backup from different device
+            return None
+    else:
+        rows = data
+        try:
+            file_id = int(os.path.splitext(snapshot_name)[0])
+        except ValueError:
+            file_id = None
 
-    target_file = get_any_file_by_id(file_id)
+    target_file = get_any_file_by_id(file_id) if file_id else None
     if target_file:
         replace_records(file_id, rows)
         restore_uploaded_file(file_id)
         restored_file_id = file_id
     else:
-        restored_file_id = save_uploaded_file(f"Recovered backup {file_id}.xlsx", f"recovered_backup_{file_id}.json")
+        restored_file_id = save_uploaded_file(f"Recovered backup {snapshot_name}", f"recovered_{snapshot_name}")
         save_records(restored_file_id, rows)
         write_temp_snapshot(restored_file_id, rows)
 
-    log_action("restore_backup", "file", restored_file_id, f"Restored records from temp snapshot {file_id}.json.")
+    log_action("restore_backup", "file", restored_file_id, f"Restored records from temp snapshot {snapshot_name}.")
     return restored_file_id
 
 
@@ -283,6 +373,15 @@ def delete_uploaded_file(file_id):
         "UPDATE uploaded_files SET status = 'trashed', deleted_at = ? WHERE id = ?",
         (datetime.utcnow().isoformat(), file_id),
     )
+    
+    # Enforce Max 10 trashed files
+    trashed = conn.execute("SELECT id FROM uploaded_files WHERE status = 'trashed' ORDER BY deleted_at ASC").fetchall()
+    if len(trashed) > 10:
+        for idx in range(len(trashed) - 10):
+            oldest_id = trashed[idx]["id"]
+            conn.execute("DELETE FROM deleted_records WHERE file_id = ?", (oldest_id,))
+            conn.execute("DELETE FROM uploaded_files WHERE id = ?", (oldest_id,))
+            
     conn.commit()
     conn.close()
     write_temp_snapshot_from_db(file_id)

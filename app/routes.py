@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from io import BytesIO
-from flask import flash, jsonify, redirect, render_template, request, send_file, send_from_directory, session, url_for
+from flask import flash, jsonify, redirect, render_template, request, send_file, send_from_directory, session, url_for, g
 from openpyxl import Workbook
 from werkzeug.utils import secure_filename
 
@@ -32,6 +32,11 @@ from app.services.excel_service import parse_excel_file
 
 
 def register_routes(app):
+    @app.before_request
+    def set_device_info():
+        g.device_id = request.headers.get("X-Device-ID") or request.form.get("device_id") or request.args.get("device_id")
+        g.device_name = request.headers.get("X-Device-Name") or request.form.get("device_name") or request.args.get("device_name")
+
     @app.errorhandler(404)
     def not_found_route(error):
         files = get_uploaded_files()
@@ -186,13 +191,13 @@ def register_routes(app):
         flash("File could not be restored.")
         return redirect(url_for("trash_route"))
 
-    @app.route("/backup/<int:file_id>/restore", methods=["POST"])
-    def restore_backup_route(file_id):
-        restored_file_id = restore_records_from_snapshot(file_id)
+    @app.route("/backup/<snapshot_name>/restore", methods=["POST"])
+    def restore_backup_route(snapshot_name):
+        restored_file_id = restore_records_from_snapshot(snapshot_name)
         if restored_file_id:
             flash("Backup restored from temp snapshot.")
             return redirect(url_for("index", file_id=restored_file_id))
-        flash("Backup snapshot was not found.")
+        flash("Backup snapshot could not be restored (either not found or you are using a different device).")
         return redirect(url_for("settings_route"))
 
     @app.route("/files/reorder", methods=["POST"])
