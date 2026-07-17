@@ -1,0 +1,9 @@
+{% if files %}
+    <div class="tabs">
+        {% for file in files %}
+            <a class="tab {% if selected_file and selected_file.id == file.id %}active{% endif %}" href="{{ url_for('index', file_id=file.id) }}">
+                {{ file.original_name }}
+            </a>
+        {% endfor %}
+    </div>
+{% endif %}
