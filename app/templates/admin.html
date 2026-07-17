@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="padding: 20px; max-width: 1000px; margin: 0 auto;">
+    <h2 style="margin-bottom: 20px;" data-i18n="adminPanel">Admin Panel</h2>
+
+    <!-- System Settings -->
+    <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px;">
+        <h3 data-i18n="systemSettings">System Settings</h3>
+        <form method="post" action="{{ url_for('admin') }}" style="margin-top: 15px;">
+            <input type="hidden" name="action" value="save_settings">
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 8px;" data-i18n="loginSystem">Login System</label>
+                <select name="login_enabled" id="loginEnabledSelect" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 200px;" onchange="document.getElementById('regSetting').style.display = this.value === '1' ? 'block' : 'none';">
+                    <option value="1" {% if login_enabled %}selected{% endif %}>Enabled</option>
+                    <option value="0" {% if not login_enabled %}selected{% endif %}>Disabled</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;" id="regSetting" style="display: {% if login_enabled %}block{% else %}none{% endif %};">
+                <label style="display: block; font-weight: bold; margin-bottom: 8px;" data-i18n="registrationSystem">Registration System</label>
+                <select name="registration_enabled" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 200px;">
+                    <option value="1" {% if registration_enabled %}selected{% endif %}>Enabled</option>
+                    <option value="0" {% if not registration_enabled %}selected{% endif %}>Disabled</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 8px;" data-i18n="allowedDomains">Allowed Email Domains (comma separated)</label>
+                <input type="text" name="allowed_domains" value="{{ allowed_domains }}" placeholder="e.g., example.com, company.org" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; max-width: 400px;">
+            </div>
+
+            <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 300px; background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #eee;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 12px; font-size: 16px;"><i class="fa-solid fa-server" style="color: #0d6efd;"></i> Accurate.id Integration</label>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Status</label>
+                        <select name="accurate_enabled" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                            <option value="1" {% if accurate_enabled %}selected{% endif %}>Enabled</option>
+                            <option value="0" {% if not accurate_enabled %}selected{% endif %}>Disabled</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Client ID</label>
+                        <input type="text" name="accurate_client_id" value="{{ accurate_client_id }}" placeholder="Enter Accurate Client ID" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Client Secret</label>
+                        <input type="password" name="accurate_client_secret" value="{{ accurate_client_secret }}" placeholder="Enter Accurate Client Secret" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                    </div>
+                </div>
+
+                <div style="flex: 1; min-width: 300px; background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #eee;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 12px; font-size: 16px;"><i class="fa-solid fa-database" style="color: #20c997;"></i> Supabase Integration</label>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Status</label>
+                        <select name="supabase_enabled" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                            <option value="1" {% if supabase_enabled %}selected{% endif %}>Enabled</option>
+                            <option value="0" {% if not supabase_enabled %}selected{% endif %}>Disabled</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Project URL</label>
+                        <input type="url" name="supabase_url" value="{{ supabase_url }}" placeholder="https://xyzcompany.supabase.co" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Anon / Service Key</label>
+                        <input type="password" name="supabase_key" value="{{ supabase_key }}" placeholder="Enter Supabase Key" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="primary-btn" data-i18n="saveChanges">Save Settings</button>
+        </form>
+    </div>
+
+    <!-- System Maintenance -->
+    <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #ffeeba; margin-bottom: 20px;">
+        <h3 style="color: #856404; margin-bottom: 10px;"><i class="fa-solid fa-triangle-exclamation"></i> System Maintenance</h3>
+        <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Enable maintenance mode to block non-admin users from accessing the system.</p>
+        <form method="post" action="{{ url_for('toggle_maintenance') }}" data-normal-submit>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="padding: 8px 12px; border-radius: 4px; background: {% if maintenance_mode %}#f8d7da{% else %}#e2e3e5{% endif %}; border: 1px solid {% if maintenance_mode %}#f5c6cb{% else %}#d6d8db{% endif %}; font-weight: bold; color: {% if maintenance_mode %}#721c24{% else %}#383d41{% endif %};">
+                    Status: {{ 'Enabled' if maintenance_mode else 'Disabled' }}
+                </div>
+                <button type="submit" class="primary-btn" style="background: {% if maintenance_mode %}#28a745{% else %}#dc3545{% endif %}; border: none;">
+                    <i class="fa-solid fa-power-off" style="margin-right: 5px;"></i> {{ 'Disable Maintenance Mode' if maintenance_mode else 'Enable Maintenance Mode' }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Import Users -->
+    <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eaeaea; margin-bottom: 20px;">
+        <h3 style="margin-bottom: 10px; color: #333;" data-i18n="importUsers">Import Users</h3>
+        <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Upload a JSON file containing user data to bulk import users into the system.</p>
+        <form method="post" action="{{ url_for('admin') }}" enctype="multipart/form-data" style="display: flex; align-items: center; gap: 15px; background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px dashed #ced4da;">
+            <input type="hidden" name="action" value="import_users">
+            <div style="flex: 1;">
+                <input type="file" name="json_file" accept=".json" required style="display: block; width: 100%; padding: 8px; color: #495057; background-color: #fff; border: 1px solid #ced4da; border-radius: 4px;">
+            </div>
+            <button type="submit" class="primary-btn" style="white-space: nowrap;"><i class="fa-solid fa-cloud-arrow-up" style="margin-right: 8px;"></i> Import from JSON</button>
+            <a href="{{ url_for('static', filename='users_template.json') }}" target="_blank" style="color: #0d6efd; text-decoration: none; font-weight: 500; font-size: 14px; white-space: nowrap; padding: 8px 12px; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='transparent'"><i class="fa-solid fa-download" style="margin-right: 5px;"></i> Download Template</a>
+        </form>
+    </div>
+
+    <!-- Add User Manually -->
+    <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px;">
+        <h3 data-i18n="addUserManually">Add User Manually</h3>
+        <form method="post" action="{{ url_for('admin') }}" style="margin-top: 15px; display: grid; gap: 15px; grid-template-columns: 1fr 1fr 1fr auto; align-items: end;">
+            <input type="hidden" name="action" value="add_user">
+            <div>
+                <label style="display: block; font-weight: bold; margin-bottom: 8px;" data-i18n="username">Username</label> <span style="color:red">*</span>
+                <input type="text" name="username" required style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+            </div>
+            <div>
+                <label style="display: block; font-weight: bold; margin-bottom: 8px;" data-i18n="email">Email</label>
+                <input type="email" name="email" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+            </div>
+            <div>
+                <label style="display: block; font-weight: bold; margin-bottom: 8px;" data-i18n="password">Password</label> <span style="color:red">*</span>
+                <input type="password" name="password" required style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+            </div>
+            <div>
+                <button type="submit" class="primary-btn"><i class="fa-solid fa-user-plus" style="margin-right: 5px;"></i> <span data-i18n="addUserManually">Add User</span></button>
+            </div>
+        </form>
+    </div>
+
+    <!-- User Management Table -->
+    <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h3 data-i18n="userManagement">User Management</h3>
+        <table class="data-table" style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa; border-bottom: 2px solid #ddd;">
+                    <th style="padding: 12px; text-align: left;" data-i18n="id">ID</th>
+                    <th style="padding: 12px; text-align: left;" data-i18n="username">Username</th>
+                    <th style="padding: 12px; text-align: left;" data-i18n="email">Email</th>
+                    <th style="padding: 12px; text-align: left;" data-i18n="role">Role</th>
+                    <th style="padding: 12px; text-align: left;" data-i18n="status">Status</th>
+                    <th style="padding: 12px; text-align: left;" data-i18n="actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px;">{{ user.id }}</td>
+                    <td style="padding: 12px;">{{ user.username }}</td>
+                    <td style="padding: 12px;">{{ user.email or '-' }}</td>
+                    <td style="padding: 12px;">
+                        <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; background: {% if user.role == 'admin' %}#e8f4fd; color: #0056b3{% else %}#f0f0f0; color: #555{% endif %};">
+                            {{ user.role }}
+                        </span>
+                    </td>
+                    <td style="padding: 12px;">
+                        <span style="padding: 4px 8px; border-radius: 12px; font-size: 12px; background: {% if user.status == 'active' %}#e6f4ea; color: #137333{% else %}#fce8e6; color: #c5221f{% endif %};">
+                            {{ user.status }}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <!-- Edit button -->
+                        <button type="button"
+                            class="edit-user-btn"
+                            style="background: #0d6efd; color: #fff; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-size: 13px;"
+                            data-id="{{ user.id }}"
+                            data-username="{{ user.username }}"
+                            data-email="{{ user.email or '' }}"
+                            data-i18n-aria-label="editUser"
+                            onclick="openEditModal(this)">
+                            <i class="fa-solid fa-pen"></i> <span data-i18n="edit">Edit</span>
+                        </button>
+
+                        {% if user.role != 'admin' %}
+                        <!-- Toggle Status -->
+                        <form method="post" action="{{ url_for('admin') }}" style="display: inline;">
+                            <input type="hidden" name="action" value="update_status">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <input type="hidden" name="status" value="{{ 'disabled' if user.status == 'active' else 'active' }}">
+                            <button type="submit" style="background: {% if user.status == 'active' %}#ffc107{% else %}#28a745{% endif %}; color: #fff; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-size: 13px;">
+                                <i class="fa-solid fa-{% if user.status == 'active' %}ban{% else %}check{% endif %}"></i>
+                                {{ 'Disable' if user.status == 'active' else 'Enable' }}
+                            </button>
+                        </form>
+
+                        <!-- Delete -->
+                        <form method="post" action="{{ url_for('admin') }}" style="display: inline;" onsubmit="return confirmDeleteUser(this)">
+                            <input type="hidden" name="action" value="delete_user">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" style="background: #dc3545; color: #fff; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-size: 13px;" data-i18n-aria-label="deleteUser">
+                                <i class="fa-solid fa-trash"></i> <span data-i18n="delete">Delete</span>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div id="editUserModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; padding:32px; width:420px; max-width:95vw; box-shadow: 0 20px 60px rgba(0,0,0,0.3); position:relative;">
+        <button onclick="closeEditModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#666;">&times;</button>
+        <h3 style="margin-bottom:20px;" data-i18n="editUser">Edit User</h3>
+        <form method="post" action="{{ url_for('admin') }}">
+            <input type="hidden" name="action" value="edit_user">
+            <input type="hidden" name="user_id" id="editUserId">
+            <div style="margin-bottom: 14px;">
+                <label style="display:block;font-weight:bold;margin-bottom:6px;" data-i18n="username">Username</label>
+                <input type="text" name="username" id="editUsername" required style="width:100%;padding:9px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+            </div>
+            <div style="margin-bottom: 14px;">
+                <label style="display:block;font-weight:bold;margin-bottom:6px;" data-i18n="email">Email</label>
+                <input type="email" name="email" id="editEmail" style="width:100%;padding:9px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display:block;font-weight:bold;margin-bottom:6px;" data-i18n="newPassword">New Password</label>
+                <input type="password" name="password" id="editPassword" placeholder="Leave blank to keep current" style="width:100%;padding:9px;border:1px solid #ddd;border-radius:6px;box-sizing:border-box;">
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button type="submit" class="primary-btn" style="flex:1;" data-i18n="saveChanges">Save Changes</button>
+                <button type="button" onclick="closeEditModal()" style="flex:1;padding:9px;border:1px solid #ddd;border-radius:6px;background:#f8f9fa;cursor:pointer;" data-i18n="cancel">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditModal(btn) {
+    document.getElementById('editUserId').value = btn.dataset.id;
+    document.getElementById('editUsername').value = btn.dataset.username;
+    document.getElementById('editEmail').value = btn.dataset.email;
+    document.getElementById('editPassword').value = '';
+    var modal = document.getElementById('editUserModal');
+    modal.style.display = 'flex';
+    // Re-apply i18n to modal if available
+    if (typeof applyTranslations === 'function') applyTranslations();
+}
+function closeEditModal() {
+    document.getElementById('editUserModal').style.display = 'none';
+}
+function confirmDeleteUser(form) {
+    var msg = (typeof t === 'function') ? t('confirmDelete') : 'Are you sure you want to delete this user?';
+    return confirm(msg);
+}
+// Close modal on backdrop click
+document.getElementById('editUserModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+});
+// Fix inline style conflict on regSetting
+document.addEventListener('DOMContentLoaded', function() {
+    var regSetting = document.getElementById('regSetting');
+    var loginSelect = document.getElementById('loginEnabledSelect');
+    if (regSetting && loginSelect) {
+        regSetting.style.display = loginSelect.value === '1' ? 'block' : 'none';
+    }
+});
+</script>
+{% endblock %}

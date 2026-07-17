@@ -29,7 +29,7 @@
     {% set can_upload_workbook = files is not defined or files|length == 0 %}
     <div id="splashScreen" class="splash-screen" role="status" aria-live="polite">
         <div class="splash-panel">
-            <img class="splash-logo" src="{{ url_for('static', filename='images/white-logo.png') }}" alt="Boccard Item List">
+            <img class="splash-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Boccard Item List">
             <div class="splash-copy">
                 <h2>Boccard Item List</h2>
                 <dl>
@@ -45,29 +45,35 @@
     </div>
     <script>
         (function () {
+            function setDeviceCookie(name, value) {
+                document.cookie = name + "=" + encodeURIComponent(value) + "; path=/; max-age=31536000";
+            }
+
             function getStoredDeviceName() {
                 var stored = localStorage.getItem('boccardDeviceName');
-                if (stored) {
-                    return stored;
+                var deviceName = stored;
+                if (!stored) {
+                    deviceName = 'Device ' + Math.random().toString(16).slice(2, 8).toUpperCase();
+                    localStorage.setItem('boccardDeviceName', deviceName);
                 }
-                var deviceName = 'Device ' + Math.random().toString(16).slice(2, 8).toUpperCase();
-                localStorage.setItem('boccardDeviceName', deviceName);
+                setDeviceCookie('device_name', deviceName);
                 return deviceName;
             }
 
             function getStoredDeviceId() {
                 var stored = localStorage.getItem('boccardDeviceId');
-                if (stored) {
-                    return stored;
+                var id = stored;
+                if (!stored) {
+                    var cryptoApi = window.crypto || window.msCrypto;
+                    id = 'dev-' + Math.random().toString(16).slice(2, 10).toUpperCase();
+                    if (cryptoApi && cryptoApi.getRandomValues) {
+                        var values = new Uint32Array(2);
+                        cryptoApi.getRandomValues(values);
+                        id = 'dev-' + values[0].toString(16).toUpperCase().padStart(8, '0') + values[1].toString(16).toUpperCase().padStart(8, '0');
+                    }
+                    localStorage.setItem('boccardDeviceId', id);
                 }
-                var cryptoApi = window.crypto || window.msCrypto;
-                var id = 'dev-' + Math.random().toString(16).slice(2, 10).toUpperCase();
-                if (cryptoApi && cryptoApi.getRandomValues) {
-                    var values = new Uint32Array(2);
-                    cryptoApi.getRandomValues(values);
-                    id = 'dev-' + values[0].toString(16).toUpperCase().padStart(8, '0') + values[1].toString(16).toUpperCase().padStart(8, '0');
-                }
-                localStorage.setItem('boccardDeviceId', id);
+                setDeviceCookie('device_id', id);
                 return id;
             }
 
@@ -143,11 +149,26 @@
                 <div class="side-divider"></div>
                 <div class="side-label" data-i18n="system">SYSTEM</div>
                 <nav class="side-nav">
-                    <a href="{{ url_for('settings_route') }}" class="side-link {% if active_tab == 'settings' %}active{% endif %}"><i class="fa-solid fa-gear" aria-hidden="true"></i><span data-i18n="settings">Settings</span></a>
-                    <a href="{{ url_for('audit_log_route') }}" class="side-link {% if active_tab == 'audit' %}active{% endif %}"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span data-i18n="auditLog">Audit Log</span></a>
-                    <a href="{{ url_for('trash_route') }}" class="side-link {% if active_tab == 'trash' %}active{% endif %}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span data-i18n="trash">Trash</span></a>
+                    {% if login_enabled %}
+                        <a href="{{ url_for('settings_route') }}" class="side-link {% if active_tab == 'settings' %}active{% endif %}"><i class="fa-solid fa-gear" aria-hidden="true"></i><span data-i18n="settings">Settings</span></a>
+                        <a href="{{ url_for('audit_log_route') }}" class="side-link {% if active_tab == 'audit' %}active{% endif %}"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span data-i18n="auditLog">Audit Log</span></a>
+                        <a href="{{ url_for('trash_route') }}" class="side-link {% if active_tab == 'trash' %}active{% endif %}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span data-i18n="trash">Trash</span></a>
+                        {% if current_user.is_authenticated %}
+                            {% if current_user.role == 'admin' %}
+                            <a href="{{ url_for('admin') }}" class="side-link {% if active_tab == 'admin' %}active{% endif %}"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span data-i18n="adminPanel">Admin Panel</span></a>
+                            {% endif %}
+                            <a href="{{ url_for('logout') }}" class="side-link"><i class="fa-solid fa-sign-out-alt" aria-hidden="true"></i><span>Logout ({{ current_user.username }})</span></a>
+                        {% else %}
+                            <a href="{{ url_for('login') }}" class="side-link"><i class="fa-solid fa-sign-in-alt" aria-hidden="true"></i><span data-i18n="login">Login</span></a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ url_for('settings_route') }}" class="side-link {% if active_tab == 'settings' %}active{% endif %}"><i class="fa-solid fa-gear" aria-hidden="true"></i><span data-i18n="settings">Settings</span></a>
+                        <a href="{{ url_for('audit_log_route') }}" class="side-link {% if active_tab == 'audit' %}active{% endif %}"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span data-i18n="auditLog">Audit Log</span></a>
+                        <a href="{{ url_for('trash_route') }}" class="side-link {% if active_tab == 'trash' %}active{% endif %}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span data-i18n="trash">Trash</span></a>
+                    {% endif %}
                 </nav>
             </aside>
+
 
             <main class="main-area">
                 <nav id="pageTabs" class="file-tabs" aria-label="Page tabs" tabindex="-1">
@@ -182,28 +203,6 @@
                         </div>
                     {% endif %}
 
-                    {% if active_tab == 'settings' %}
-                        <div class="file-tab active" data-tab-id="settings" data-tab-kind="page">
-                            <a class="tab-link" href="{{ url_for('settings_route') }}">
-                                <i class="fa-solid fa-gear" aria-hidden="true"></i>
-                                <span data-i18n="settings">Settings</span>
-                            </a>
-                        </div>
-                    {% elif active_tab == 'audit' %}
-                        <div class="file-tab active" data-tab-id="audit" data-tab-kind="page">
-                            <a class="tab-link" href="{{ url_for('audit_log_route') }}">
-                                <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
-                                <span data-i18n="auditLog">Audit Log</span>
-                            </a>
-                        </div>
-                    {% elif active_tab == 'trash' %}
-                        <div class="file-tab active" data-tab-id="trash" data-tab-kind="page">
-                            <a class="tab-link" href="{{ url_for('trash_route') }}">
-                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
-                                <span data-i18n="trash">Trash</span>
-                            </a>
-                        </div>
-                    {% endif %}
                 </nav>
 
                 <section class="content-scroll">
@@ -218,6 +217,11 @@
                     {% endwith %}
 
                     {% block content %}{% endblock %}
+
+                    <footer class="app-footer" style="text-align: center; padding: 40px 20px 20px; font-size: 14px; color: #888;">
+                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Boccard Logo" style="height: 32px; margin: 15px 0; opacity: 0.7;">
+                        <div>&copy; 2026 Boccard Indonesia</div>
+                    </footer>
                 </section>
             </main>
         </div>
@@ -225,7 +229,7 @@
 
     {% if can_upload_workbook %}
         <dialog id="uploadModal" class="upload-modal">
-            <form method="post" action="{{ url_for('index') }}" enctype="multipart/form-data">
+            <form action="{{ url_for('index') }}" method="post" enctype="multipart/form-data" class="modal-form" onsubmit="const btn = this.querySelector('button[type=submit]'); btn.disabled=true; btn.innerHTML='<i class=\'fa-solid fa-spinner fa-spin\' style=\'margin-right: 8px;\'></i> Uploading...';">
                 <div class="modal-head">
                     <h2 data-i18n="uploadExcel">Upload Excel</h2>
                     <button type="button" class="modal-close" onclick="document.getElementById('uploadModal').close()" aria-label="Close upload dialog" data-i18n-aria-label="closeUploadDialog">

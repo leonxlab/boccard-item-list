@@ -46,7 +46,17 @@
                 </form>
 
                 {% if records %}
-                    <div class="table-controls">
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eaeaea;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-weight: 600; color: #333;"><i class="fa-solid fa-heart-pulse" style="color: {% if health_score < 80 %}#ef4444{% else %}#10b981{% endif %};"></i> Data Health Score</span>
+                            <span style="font-weight: bold; color: {% if health_score < 80 %}#ef4444{% else %}#10b981{% endif %};">{{ health_score }}%</span>
+                        </div>
+                        <div style="width: 100%; background: #e9ecef; border-radius: 4px; height: 8px; overflow: hidden;">
+                            <div style="width: {{ health_score }}%; background: {% if health_score < 80 %}#ef4444{% else %}#10b981{% endif %}; height: 100%; transition: width 0.5s ease;"></div>
+                        </div>
+                    </div>
+
+                    <div class="table-controls" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                         <button id="toggleDetailsColumns" class="show-more-btn" type="button" aria-expanded="false" data-i18n="showMoreDetails">Show More Details</button>
                     </div>
                 {% endif %}
@@ -148,5 +158,44 @@
             <p>Upload an Excel file to start reviewing your item list.</p>
             <button type="button" class="primary-btn" onclick="document.getElementById('uploadModal').showModal()" data-i18n="uploadExcel">Upload Excel</button>
         </div>
+    {% endif %}
+
+    {% if records %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const table = document.querySelector(".records-table");
+            if (!table) return;
+            
+            let criticalCount = 0;
+            const keywords = ["import", "exw", "tbd", "to be defined"];
+            
+            // In DataTables, rows are generated dynamically, but we can hook into drawCallback
+            // However, since we just have a standard table structure rendered first, we can mark them 
+            // and let DataTables preserve the classes.
+            const rows = table.querySelectorAll("tbody tr");
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                const isCritical = keywords.some(k => text.includes(k));
+                if (isCritical) {
+                    row.style.backgroundColor = "#fff7ed";
+                    row.style.borderLeft = "4px solid #f97316";
+                    row.title = "Critical/Long-Lead Item (Check Remarks)";
+                    criticalCount++;
+                }
+            });
+            
+            if (criticalCount > 0) {
+                const header = document.querySelector(".page-header h1");
+                if (header) {
+                    const bellContainer = document.createElement("span");
+                    bellContainer.style.marginLeft = "15px";
+                    bellContainer.style.verticalAlign = "middle";
+                    bellContainer.innerHTML = `<i class="fa-solid fa-bell" style="color: #f97316; font-size: 24px; cursor: pointer;" title="${criticalCount} Critical Items require attention."></i> 
+                    <span style="background: #ef4444; color: white; border-radius: 10px; padding: 2px 6px; font-size: 12px; font-weight: bold; position: relative; top: -10px; left: -10px;">${criticalCount}</span>`;
+                    header.appendChild(bellContainer);
+                }
+            }
+        });
+    </script>
     {% endif %}
 {% endblock %}

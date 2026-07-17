@@ -236,17 +236,12 @@ function renderDeviceList(list, devices) {
         var copy = document.createElement('div');
         var name = document.createElement('strong');
         name.textContent = device.device_name || 'Unknown Device';
-        var id = document.createElement('small');
-        id.textContent = device.device_id || '-';
+        
         copy.appendChild(name);
-        copy.appendChild(id);
 
-        var state = document.createElement('em');
-        state.textContent = device.online ? 'Online' : 'Offline';
-
+        item.style.gridTemplateColumns = '10px 1fr';
         item.appendChild(dot);
         item.appendChild(copy);
-        item.appendChild(state);
         list.appendChild(item);
     });
 }
@@ -418,7 +413,27 @@ var translations = {
         uploadExcel: 'Upload Excel',
         workbook: 'Workbook',
         languageSwitchValue: 'English / Indonesian',
-        persistentEditTabs: 'Persistent edit tabs'
+        persistentEditTabs: 'Persistent edit tabs',
+        adminPanel: 'Admin Panel',
+        login: 'Login',
+        logout: 'Logout',
+        userManagement: 'User Management',
+        importUsers: 'Import Users',
+        addUserManually: 'Add User Manually',
+        systemSettings: 'System Settings',
+        editUser: 'Edit User',
+        deleteUser: 'Delete User',
+        saveChanges: 'Save Changes',
+        id: 'ID',
+        username: 'Username',
+        email: 'Email',
+        role: 'Role',
+        password: 'Password',
+        newPassword: 'New Password (leave blank to keep current)',
+        confirmDelete: 'Are you sure you want to delete this user?',
+        loginSystem: 'Login System',
+        registrationSystem: 'Registration System',
+        allowedDomains: 'Allowed Email Domains (comma separated)'
     },
     id: {
         auditLog: 'Log Audit',
@@ -503,7 +518,27 @@ var translations = {
         uploadExcel: 'Upload Excel',
         workbook: 'Workbook',
         languageSwitchValue: 'Bahasa Inggris / Bahasa Indonesia',
-        persistentEditTabs: 'Tab edit persisten'
+        persistentEditTabs: 'Tab edit persisten',
+        adminPanel: 'Panel Admin',
+        login: 'Masuk',
+        logout: 'Keluar',
+        userManagement: 'Manajemen Pengguna',
+        importUsers: 'Impor Pengguna',
+        addUserManually: 'Tambah Pengguna Manual',
+        systemSettings: 'Pengaturan Sistem',
+        editUser: 'Edit Pengguna',
+        deleteUser: 'Hapus Pengguna',
+        saveChanges: 'Simpan Perubahan',
+        id: 'ID',
+        username: 'Username',
+        email: 'Email',
+        role: 'Peran',
+        password: 'Kata Sandi',
+        newPassword: 'Kata Sandi Baru (kosongkan untuk tetap sama)',
+        confirmDelete: 'Apakah Anda yakin ingin menghapus pengguna ini?',
+        loginSystem: 'Sistem Login',
+        registrationSystem: 'Sistem Registrasi',
+        allowedDomains: 'Domain Email yang Diizinkan (pisahkan dengan koma)'
     }
 };
 
@@ -960,12 +995,14 @@ function replaceWorkspace(html) {
     initPageControls();
 }
 
+
 function syncPersistentEditTabs() {
     var tabs = document.getElementById('pageTabs');
     if (!tabs) {
         return;
     }
-
+    
+    // Sync Edit Tabs
     var currentEditTab = tabs.querySelector('[data-tab-kind="edit"][data-edit-id]');
     if (currentEditTab) {
         upsertStoredEditTab({
@@ -982,14 +1019,43 @@ function syncPersistentEditTabs() {
     }));
 
     getStoredEditTabs().forEach(function (item) {
-        if (!item.id || existingIds.has(item.id)) {
-            return;
+        if (!existingIds.has(item.id)) {
+            tabs.appendChild(createEditTab(item, false));
         }
-        tabs.appendChild(createEditTab(item, false));
     });
 
     applyStoredTabOrder();
 }
+
+function initEditTabCloseButtons() {
+    document.querySelectorAll('[data-close-edit-tab]').forEach(function (button) {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            var tabId = button.dataset.closeEditTab;
+            
+            var tab = button.closest('[data-tab-id]');
+            var wasActive = tab?.classList.contains('active');
+            
+            setStoredEditTabs(getStoredEditTabs().filter(function (item) {
+                return item.id !== tabId;
+            }));
+            
+            tab?.remove();
+            saveCurrentTabOrder();
+            
+            if (wasActive) {
+                var fallback = document.querySelector('[data-tab-kind="file"] .tab-link') ||
+                    document.querySelector('[data-tab-kind="dashboard"] .tab-link') ||
+                    document.querySelector('#pageTabs .tab-link');
+                if (fallback) {
+                    window.location.href = fallback.href;
+                }
+            }
+        });
+    });
+}
+
 
 function getStoredEditTabs() {
     try {

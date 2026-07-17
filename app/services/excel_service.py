@@ -112,6 +112,7 @@ def parse_excel_file(path):
             "boccard_item_number": "",
             "tag_number": "",
             "designation": "",
+            "category": "Uncategorized",
             "extra_data": {},
         }
 
@@ -119,6 +120,22 @@ def parse_excel_file(path):
             if index >= len(headers):
                 continue
             _map_value(record, headers[index], value)
+
+        desig = str(record.get("designation", "")).lower()
+        if "valve" in desig or "actuator" in desig:
+            record["category"] = "Valves & Actuators"
+        elif "pump" in desig:
+            record["category"] = "Pumps"
+        elif "pipe" in desig or "fitting" in desig or "flange" in desig:
+            record["category"] = "Piping & Fittings"
+        elif "tank" in desig or "vessel" in desig:
+            record["category"] = "Tanks & Vessels"
+        elif "sensor" in desig or "transmitter" in desig or "gauge" in desig or "meter" in desig or "indicator" in desig:
+            record["category"] = "Instruments"
+        elif "motor" in desig or "electrical" in desig:
+            record["category"] = "Electrical"
+        elif desig:
+            record["category"] = "Other"
 
         parsed_rows.append(record)
 

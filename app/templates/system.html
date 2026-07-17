@@ -65,6 +65,7 @@
                                     <th>Snapshot</th>
                                     <th>File ID</th>
                                     <th>Updated At</th>
+                                    {% if login_enabled %}<th>User</th>{% endif %}
                                     <th>Size</th>
                                     <th>Action</th>
                                 </tr>
@@ -75,6 +76,7 @@
                                         <td>{{ snapshot.name }}</td>
                                         <td>{{ snapshot.file_id or '-' }}</td>
                                         <td>{{ snapshot.updated_at|replace('T', ' ') }}</td>
+                                        {% if login_enabled %}<td>{{ snapshot.name }}</td>{% endif %}
                                         <td>{{ snapshot.size }} bytes</td>
                                         <td>
                                             {% if snapshot.snapshot_name %}
@@ -100,6 +102,7 @@
                             <tr>
                                 <th>Time</th>
                                 <th>Device</th>
+                                {% if login_enabled %}<th>User</th>{% endif %}
                                 <th>Action</th>
                                 <th>Entity</th>
                                 <th>Message</th>
@@ -117,6 +120,11 @@
                                             <span class="muted">Unknown</span>
                                         {% endif %}
                                     </td>
+                                    {% if login_enabled %}
+                                    <td>
+                                        {% if log.user_name %}<strong>{{ log.user_name }}</strong>{% else %}-{% endif %}
+                                    </td>
+                                    {% endif %}
                                     <td data-i18n-log-action="{{ log.action }}">{{ log.action|replace('_', ' ')|title }}</td>
                                     <td data-i18n-log-entity="{{ log.entity_type }}">{{ log.entity_type|title }} {{ log.entity_id or '' }}</td>
                                     <td data-i18n-log="{{ log.message }}">{{ log.message }}</td>
@@ -136,6 +144,7 @@
                                 <tr>
                                     <th>File Name</th>
                                     <th>Deleted At</th>
+                                    {% if login_enabled %}<th>User</th>{% endif %}
                                     <th>Status</th>
                                     <th>Action</th>
                                 </tr>
@@ -145,6 +154,7 @@
                                     <tr>
                                         <td>{{ file.original_name }}</td>
                                         <td>{{ file.deleted_at|replace('T', ' ') if file.deleted_at else '-' }}</td>
+                                        {% if login_enabled %}<td>-</td>{% endif %}
                                         <td>{{ file.status|title }}</td>
                                         <td>
                                             <form method="post" action="{{ url_for('restore_file_route', file_id=file.id) }}">
@@ -166,6 +176,7 @@
                                     <th>File</th>
                                     <th>Tag Number</th>
                                     <th>Deleted At</th>
+                                    {% if login_enabled %}<th>User</th>{% endif %}
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -176,6 +187,7 @@
                                         <td>{{ item.file_name or item.file_id }}</td>
                                         <td>{{ item.payload.tag_number or '-' }}</td>
                                         <td>{{ item.deleted_at|replace('T', ' ') }}</td>
+                                        {% if login_enabled %}<td>{{ item.user_name or '-' }}</td>{% endif %}
                                         <td>
                                             <form method="post" action="{{ url_for('restore_record_route', deleted_record_id=item.id) }}">
                                                 <button class="small-action edit-action" type="submit">Restore</button>

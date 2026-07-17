@@ -3,6 +3,7 @@ import os
 import sqlite3
 from datetime import datetime
 from flask import g
+from werkzeug.security import generate_password_hash
 
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "app.db")
@@ -24,6 +25,26 @@ def init_db(upload_folder=None, temp_folder=None):
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute(
+        '''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT,
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'user',
+            status TEXT NOT NULL DEFAULT 'active'
+        )
+        '''
+    )
+    conn.execute(
+        '''
+        CREATE TABLE IF NOT EXISTS app_settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )
+        '''
+    )
+    conn.execute(
         """
         CREATE TABLE IF NOT EXISTS uploaded_files (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,6 +65,7 @@ def init_db(upload_folder=None, temp_folder=None):
             boccard_item_number TEXT,
             tag_number TEXT,
             designation TEXT,
+            category TEXT,
             extra_data TEXT,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
@@ -83,12 +105,41 @@ def init_db(upload_folder=None, temp_folder=None):
         conn.execute("ALTER TABLE uploaded_files ADD COLUMN status TEXT DEFAULT 'active'")
     if "deleted_at" not in columns:
         conn.execute("ALTER TABLE uploaded_files ADD COLUMN deleted_at TEXT")
+        
+    records_cols = {row[1] for row in conn.execute("PRAGMA table_info(records)").fetchall()}
+    if 'category' not in records_cols:
+        conn.execute("ALTER TABLE records ADD COLUMN category TEXT")
+
+    # Ensure default admin exists
+    admin = conn.execute("SELECT * FROM users WHERE username = 'suboccard'").fetchone()
+    if not admin:
+        conn.execute(
+            "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
+            ("suboccard", "", generate_password_hash("admin"), "admin")
+        )
+        
+    # Ensure default settings
+    login_enabled = conn.execute("SELECT * FROM app_settings WHERE key = 'login_enabled'").fetchone()
+    if not login_enabled:
+        conn.execute("INSERT INTO app_settings (key, value) VALUES (?, ?)", ("login_enabled", "1"))
 
     audit_columns = {row[1] for row in conn.execute("PRAGMA table_info(audit_logs)").fetchall()}
     if "device_id" not in audit_columns:
         conn.execute("ALTER TABLE audit_logs ADD COLUMN device_id TEXT")
     if "device_name" not in audit_columns:
         conn.execute("ALTER TABLE audit_logs ADD COLUMN device_name TEXT")
+
+    if "user_id" not in audit_columns:
+        conn.execute("ALTER TABLE audit_logs ADD COLUMN user_id INTEGER")
+    if "user_name" not in audit_columns:
+        conn.execute("ALTER TABLE audit_logs ADD COLUMN user_name TEXT")
+        
+    deleted_columns = {row[1] for row in conn.execute("PRAGMA table_info(deleted_records)").fetchall()}
+    if "user_id" not in deleted_columns:
+        conn.execute("ALTER TABLE deleted_records ADD COLUMN user_id INTEGER")
+    if "user_name" not in deleted_columns:
+        conn.execute("ALTER TABLE deleted_records ADD COLUMN user_name TEXT")
+
 
     ordered_rows = conn.execute(
         "SELECT id, tab_order FROM uploaded_files ORDER BY tab_order ASC, uploaded_at ASC, id ASC"
@@ -166,19 +217,27 @@ def get_active_devices():
     return sorted(results, key=lambda x: (not x["online"], x["device_name"].lower()))
 
 
-def log_action(action, entity_type, entity_id, message, device_id=None, device_name=None):
+def log_action(action, entity_type, entity_id, message, device_id=None, device_name=None, user_id=None, user_name=None):
     if not device_id or not device_name:
         req_dev_id, req_dev_name = get_current_device()
         device_id = device_id or req_dev_id
         device_name = device_name or req_dev_name
+        
+    from flask_login import current_user
+    try:
+        if current_user.is_authenticated:
+            user_id = user_id or current_user.id
+            user_name = user_name or current_user.username
+    except:
+        pass
 
     conn = _connect()
     conn.execute(
         """
-        INSERT INTO audit_logs (action, entity_type, entity_id, message, device_id, device_name, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO audit_logs (action, entity_type, entity_id, message, device_id, device_name, user_id, user_name, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (action, entity_type, entity_id, message, device_id, device_name, datetime.utcnow().isoformat()),
+        (action, entity_type, entity_id, message, device_id, device_name, user_id, user_name, datetime.utcnow().isoformat()),
     )
     conn.commit()
     conn.close()
@@ -206,8 +265,8 @@ def save_records(file_id, rows):
     for row in rows:
         conn.execute(
             """
-            INSERT INTO records (file_id, remarks_in_pid, boccard_item_number, tag_number, designation, extra_data, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO records (file_id, remarks_in_pid, boccard_item_number, tag_number, designation, category, extra_data, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 file_id,
@@ -215,6 +274,7 @@ def save_records(file_id, rows):
                 row.get("boccard_item_number", ""),
                 row.get("tag_number", ""),
                 row.get("designation", ""),
+                row.get("category", "Uncategorized"),
                 json.dumps(row.get("extra_data", {})),
                 now,
                 now,
@@ -231,8 +291,8 @@ def replace_records(file_id, rows):
     for row in rows:
         conn.execute(
             """
-            INSERT INTO records (file_id, remarks_in_pid, boccard_item_number, tag_number, designation, extra_data, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO records (file_id, remarks_in_pid, boccard_item_number, tag_number, designation, category, extra_data, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 file_id,
@@ -240,6 +300,7 @@ def replace_records(file_id, rows):
                 row.get("boccard_item_number", ""),
                 row.get("tag_number", ""),
                 row.get("designation", ""),
+                row.get("category", "Uncategorized"),
                 json.dumps(row.get("extra_data", {})),
                 now,
                 now,
@@ -497,6 +558,31 @@ def get_records(file_id, query=None, field=None, designation=None, remarks=None)
         result.append(item)
     return result
 
+def get_data_health_score(file_id):
+    conn = _connect()
+    rows = conn.execute("SELECT boccard_item_number, tag_number, designation, extra_data FROM records WHERE file_id = ?", (file_id,)).fetchall()
+    conn.close()
+
+    if not rows:
+        return 100
+
+    total_fields = len(rows) * 4
+    filled_fields = 0
+
+    for row in rows:
+        if row["boccard_item_number"] and str(row["boccard_item_number"]).strip() not in ("", "--", "None"):
+            filled_fields += 1
+        if row["tag_number"] and str(row["tag_number"]).strip() not in ("", "--", "None"):
+            filled_fields += 1
+        if row["designation"] and str(row["designation"]).strip() not in ("", "--", "None"):
+            filled_fields += 1
+            
+        extra = json.loads(row["extra_data"] or "{}")
+        if extra.get("Diam") and str(extra["Diam"]).strip() not in ("", "--", "None"):
+            filled_fields += 1
+
+    return int((filled_fields / total_fields) * 100)
+
 
 def get_filter_options(file_id):
     conn = _connect()
@@ -753,3 +839,68 @@ def restore_deleted_record(deleted_record_id):
         write_temp_snapshot_from_db(file_id)
     log_action("restore_record", "record", restored_id, f"Restored deleted record {payload.get('id')}.")
     return True
+
+
+def get_setting(key, default=None):
+    conn = _connect()
+    row = conn.execute("SELECT value FROM app_settings WHERE key = ?", (key,)).fetchone()
+    conn.close()
+    return row["value"] if row else default
+
+def set_setting(key, value):
+    conn = _connect()
+    conn.execute(
+        "INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=?",
+        (key, value, value)
+    )
+    conn.commit()
+    conn.close()
+
+def get_user_by_username(username):
+    conn = _connect()
+    row = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+def get_user_by_id(user_id):
+    conn = _connect()
+    row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+def get_all_users():
+    conn = _connect()
+    rows = conn.execute("SELECT id, username, email, role, status FROM users ORDER BY id").fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+def create_user(username, email, password_hash, role='user', status='active'):
+    conn = _connect()
+    try:
+        cursor = conn.execute(
+            "INSERT INTO users (username, email, password_hash, role, status) VALUES (?, ?, ?, ?, ?)",
+            (username, email, password_hash, role, status)
+        )
+        conn.commit()
+        user_id = cursor.lastrowid
+    except Exception:
+        user_id = None
+    finally:
+        conn.close()
+    return user_id
+
+def update_user_status(user_id, status):
+    conn = _connect()
+    conn.execute("UPDATE users SET status = ? WHERE id = ?", (status, user_id))
+    conn.commit()
+    conn.close()
+
+def delete_user(user_id):
+    conn = _connect()
+    conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+
+def is_login_enabled():
+    val = get_setting("login_enabled", "1")
+    return val == "1"

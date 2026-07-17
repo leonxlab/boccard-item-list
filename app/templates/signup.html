@@ -1,0 +1,29 @@
+{% extends "auth_base.html" %}
+{% block content %}
+<div class="auth-container">
+    <h2 style="text-align: center; margin-bottom: 20px; color: #333;">Sign Up</h2>
+    {% if allowed_domains %}
+    <div style="margin-bottom: 15px; padding: 10px; background: #e8f4fd; color: #0056b3; border-radius: 4px; font-size: 14px; text-align: center;">
+        Allowed domains: {{ allowed_domains }}
+    </div>
+    {% endif %}
+    <form method="post" action="{{ url_for('signup') }}">
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; color: #555;">Username</label>
+            <input type="text" name="username" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; margin-bottom: 5px; color: #555;">Email</label>
+            <input type="email" name="email" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; color: #555;">Password</label>
+            <input type="password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <button type="submit" class="primary-btn" style="width: 100%; padding: 12px; font-size: 16px;">Sign Up</button>
+        <div style="text-align: center; margin-top: 15px;">
+            <a href="{{ url_for('login') }}" style="color: #0056b3; text-decoration: none;">Already have an account? Log In</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

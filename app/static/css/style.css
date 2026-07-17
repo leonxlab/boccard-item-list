@@ -2269,11 +2269,12 @@ html.skip-splash .splash-screen {
 }
 
 .file-tabs.dragging-tabs .file-tab {
+    transition: none !important;
     pointer-events: none;
 }
 
 .file-tab {
-    transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+    transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease;
 }
 
 .file-tab:hover {
@@ -2436,6 +2437,7 @@ html.skip-splash .splash-screen {
 }
 
 .file-tabs.dragging-tabs .file-tab {
+    transition: none !important;
     pointer-events: auto;
 }
 
