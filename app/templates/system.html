@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="system-page">
+        <section class="system-panel">
+            <h2 data-i18n="{{ page_kind if page_kind != 'audit' else 'auditLog' }}">{{ page_title }}</h2>
+
+            {% if page_kind == 'settings' %}
+                <div class="settings-grid">
+                    <section class="settings-card">
+                        <h3>Workbook</h3>
+                        <dl class="system-list">
+                            <dt>Supported upload format</dt>
+                            <dd>.xlsx workbooks</dd>
+                            <dt>Active file tabs</dt>
+                            <dd>{{ files|length }}</dd>
+                            <dt>Data source</dt>
+                            <dd>Local SQLite database and uploaded Excel files</dd>
+                        </dl>
+                    </section>
+
+                    <section class="settings-card">
+                        <h3>Backup & Recovery</h3>
+                        <dl class="system-list">
+                            <dt>Autosave snapshots</dt>
+                            <dd>Enabled after import, edit, delete, and repair</dd>
+                            <dt>Snapshot folder</dt>
+                            <dd>temp/*.json</dd>
+                            <dt>Available backups</dt>
+                            <dd>{{ snapshots|length }}</dd>
+                        </dl>
+                    </section>
+
+                    <section class="settings-card">
+                        <h3>Data Safety</h3>
+                        <dl class="system-list">
+                            <dt>Audit log</dt>
+                            <dd>Persistent action history</dd>
+                            <dt>Trash mode</dt>
+                            <dd>Deleted files and records can be restored</dd>
+                            <dt>File close behavior</dt>
+                            <dd>Move to trash, keep source workbook and snapshot</dd>
+                        </dl>
+                    </section>
+
+                    <section class="settings-card">
+                        <h3>Interface</h3>
+                        <dl class="system-list">
+                            <dt>Language switch</dt>
+                            <dd>English / Indonesian</dd>
+                            <dt>Persistent edit tabs</dt>
+                            <dd>Stored in browser local storage</dd>
+                            <dt>Drag tab ordering</dt>
+                            <dd>Enabled</dd>
+                        </dl>
+                    </section>
+                </div>
+
+                <section class="settings-card full-width">
+                    <h3>Temp Backups</h3>
+                    {% if snapshots %}
+                        <table class="system-table">
+                            <thead>
+                                <tr>
+                                    <th>Snapshot</th>
+                                    <th>File ID</th>
+                                    <th>Updated At</th>
+                                    <th>Size</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for snapshot in snapshots %}
+                                    <tr>
+                                        <td>{{ snapshot.name }}</td>
+                                        <td>{{ snapshot.file_id or '-' }}</td>
+                                        <td>{{ snapshot.updated_at|replace('T', ' ') }}</td>
+                                        <td>{{ snapshot.size }} bytes</td>
+                                        <td>
+                                            {% if snapshot.file_id %}
+                                                <form method="post" action="{{ url_for('restore_backup_route', file_id=snapshot.file_id) }}">
+                                                    <button class="small-action edit-action" type="submit">Restore</button>
+                                                </form>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="muted">No temp backups found yet.</p>
+                    {% endif %}
+                </section>
+            {% elif page_kind == 'audit' %}
+                {% if audit_logs %}
+                    <table class="system-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Action</th>
+                                <th>Entity</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in audit_logs %}
+                                <tr>
+                                    <td>{{ log.created_at|replace('T', ' ') }}</td>
+                                    <td>{{ log.action|replace('_', ' ')|title }}</td>
+                                    <td>{{ log.entity_type|title }} {{ log.entity_id or '' }}</td>
+                                    <td>{{ log.message }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="muted">No audit activity yet.</p>
+                {% endif %}
+            {% else %}
+                {% if deleted_files or deleted_records %}
+                    {% if deleted_files %}
+                        <h3>Deleted Files</h3>
+                        <table class="system-table">
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Deleted At</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in deleted_files %}
+                                    <tr>
+                                        <td>{{ file.original_name }}</td>
+                                        <td>{{ file.deleted_at|replace('T', ' ') if file.deleted_at else '-' }}</td>
+                                        <td>{{ file.status|title }}</td>
+                                        <td>
+                                            <form method="post" action="{{ url_for('restore_file_route', file_id=file.id) }}">
+                                                <button class="small-action edit-action" type="submit">Restore</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
+
+                    {% if deleted_records %}
+                        <h3>Deleted Records</h3>
+                        <table class="system-table">
+                            <thead>
+                                <tr>
+                                    <th>Record ID</th>
+                                    <th>File</th>
+                                    <th>Tag Number</th>
+                                    <th>Deleted At</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in deleted_records %}
+                                    <tr>
+                                        <td>{{ item.original_record_id }}</td>
+                                        <td>{{ item.file_name or item.file_id }}</td>
+                                        <td>{{ item.payload.tag_number or '-' }}</td>
+                                        <td>{{ item.deleted_at|replace('T', ' ') }}</td>
+                                        <td>
+                                            <form method="post" action="{{ url_for('restore_record_route', deleted_record_id=item.id) }}">
+                                                <button class="small-action edit-action" type="submit">Restore</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
+                {% else %}
+                    <p class="muted">Trash is empty. Deleted files and records will appear here.</p>
+                {% endif %}
+            {% endif %}
+        </section>
+    </div>
+{% endblock %}
