@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <section class="not-found-page" aria-labelledby="notFoundTitle">
+        <div class="not-found-visual" aria-hidden="true">
+            <span class="particle particle-a"></span>
+            <span class="particle particle-b"></span>
+            <span class="particle particle-c"></span>
+            <span class="particle particle-d"></span>
+            <span class="particle particle-e"></span>
+            <span class="particle particle-f"></span>
+            <span class="particle particle-g"></span>
+            <span class="particle particle-h"></span>
+            <span class="particle particle-i"></span>
+            <span class="particle particle-j"></span>
+            <span class="particle particle-k"></span>
+            <span class="particle particle-l"></span>
+            <span class="spark spark-a"></span>
+            <span class="spark spark-b"></span>
+            <span class="spark spark-c"></span>
+            <span class="spark spark-d"></span>
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="">
+        </div>
+
+        <div class="not-found-copy">
+            <p>404</p>
+            <h2 id="notFoundTitle" data-i18n="notFound">Not Found</h2>
+            <span data-i18n="notFoundMessage">The page you requested does not exist or has been moved.</span>
+            <a class="primary-btn not-found-back" href="{{ url_for('index') }}">
+                <i class="fa-solid fa-table-columns" aria-hidden="true"></i>
+                <span data-i18n="backToDashboard">Back to Dashboard</span>
+            </a>
+        </div>
+    </section>
+{% endblock %}
