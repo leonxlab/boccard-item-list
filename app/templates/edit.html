@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <form class="edit-page" method="post" action="{{ url_for('edit_record', record_id=record.id) }}">
+        <div class="edit-head">
+            <div>
+                <a class="back-link" href="{{ url_for('index', file_id=record.file_id) }}">Back to Table</a>
+                <h2>Edit Record</h2>
+                <p>Editing record ID: {{ record.id }} <span>-</span> Source File: {{ record.original_name }}</p>
+            </div>
+            <button class="outline-danger" type="submit" formaction="{{ url_for('delete_record_route', record_id=record.id) }}">
+                Delete Record
+            </button>
+        </div>
+
+        <div class="edit-grid">
+            <section class="edit-card">
+                <h3>Primary Information</h3>
+                <label class="full-field">
+                    <span>Remarks in P&amp;ID Database <b>*</b></span>
+                    <input name="remarks_in_pid" value="{{ record.remarks_in_pid or '' }}" required>
+                </label>
+
+                <div class="field-row">
+                    <label>
+                        <span>Boccard Item Number <b>*</b></span>
+                        <input name="boccard_item_number" value="{{ record.boccard_item_number or '' }}" required>
+                    </label>
+                    <label>
+                        <span>Tag Number <b>*</b></span>
+                        <input name="tag_number" value="{{ record.tag_number or '' }}" required>
+                    </label>
+                </div>
+
+                <label class="full-field section-break">
+                    <span>Designation <b>*</b></span>
+                    <input name="designation" value="{{ record.designation or '' }}" required>
+                </label>
+
+                <h3>Other Details</h3>
+                <div class="field-row">
+                    {% for key, value in record.extra_data.items() %}
+                        <label>
+                            <span>{{ key|replace('_', ' ')|title }}</span>
+                            <input name="extra_{{ key }}" value="{{ value }}">
+                        </label>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="edit-card details-card">
+                <h3>Record Details <small>(Read Only)</small></h3>
+                <dl class="record-meta">
+                    <dt>Record ID</dt>
+                    <dd>{{ record.id }}</dd>
+                    <dt>File Name</dt>
+                    <dd>{{ record.original_name }}</dd>
+                    <dt>Row Number</dt>
+                    <dd>{{ record.id }}</dd>
+                    <dt>Created At</dt>
+                    <dd>{{ record.created_at|replace('T', ' ') }}</dd>
+                    <dt>Updated At</dt>
+                    <dd>{{ record.updated_at|replace('T', ' ') }}</dd>
+                    <dt>Status</dt>
+                    <dd><span class="status-pill">Active</span></dd>
+                </dl>
+
+                <h4>Extra Data (JSON)</h4>
+                <pre class="json-preview">{
+{% for key, value in record.extra_data.items() %}  "{{ key }}": "{{ value }}"{% if not loop.last %},{% endif %}
+{% endfor %}}</pre>
+
+                <div class="info-note">
+                    <strong>i</strong>
+                    <span>Fields marked with <b>*</b> are required.<br>Changes will be saved to the database.</span>
+                </div>
+            </section>
+        </div>
+
+        <div class="edit-actions">
+            <a class="ghost-btn" href="{{ url_for('index', file_id=record.file_id) }}">Cancel</a>
+            <div>
+                <a class="ghost-btn" href="{{ url_for('edit_record', record_id=record.id) }}">Reset Changes</a>
+                <button class="primary-btn" type="submit">Save Changes</button>
+            </div>
+        </div>
+    </form>
+{% endblock %}
