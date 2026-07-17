@@ -1,0 +1,51 @@
+<div class="table-card">
+    <h2>{{ selected_file.original_name }}</h2>
+    {% if records %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Remarks in P&ID Database</th>
+                    <th>Boccard Item Number</th>
+                    <th>Tag Number</th>
+                    <th>Designation</th>
+                    <th>Details</th>
+                            <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                    <tr>
+                        <td>{{ record.remarks_in_pid or '-' }}</td>
+                        <td>{{ record.boccard_item_number or '-' }}</td>
+                        <td>{{ record.tag_number or '-' }}</td>
+                        <td>{{ record.designation or '-' }}</td>
+                        <td>
+                            {% if record.extra_data %}
+                                <button class="link-button details-toggle" type="button" data-target="details-{{ record.id }}">Show More Details</button>
+                                <div id="details-{{ record.id }}" class="details-panel" hidden>
+                                    {% for key, value in record.extra_data.items() %}
+                                        <div><strong>{{ key }}</strong>: {{ value }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <span class="muted">No extra details</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-group">
+                                <a class="small-action edit-action" href="{{ url_for('edit_record', record_id=record.id) }}">Edit</a>
+                                <form method="post" action="{{ url_for('delete_record_route', record_id=record.id) }}">
+                                    <button type="submit" class="small-action delete-action">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">
+            <p>No records found for this file.</p>
+        </div>
+    {% endif %}
+</div>
