@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Boccard Item List</title>
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('favicon_route') }}?v=7">
+    <link rel="icon" type="image/png" href="{{ url_for('favicon_route') }}?v=7">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=10">
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="brand">
+                <button class="icon-button menu-button" type="button" aria-label="Menu" aria-expanded="true">
+                    <i class="fa-solid fa-bars" aria-hidden="true"></i>
+                </button>
+                <img class="brand-logo" src="{{ url_for('static', filename='images/white-logo.png') }}" alt="Boccard Item List">
+                <div>
+                    <h1 data-i18n="itemList">Item List</h1>
+                </div>
+            </div>
+
+            <form class="global-search" method="get" action="{{ url_for('index') }}">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input type="search" name="q" placeholder="Search across all tabs..." data-i18n-placeholder="searchAcrossTabs" value="{{ query|default('') }}">
+                <button class="search-submit" type="submit" aria-label="Search" data-i18n-aria-label="search">
+                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </button>
+            </form>
+
+            <div class="topbar-actions">
+                <button id="languageToggle" class="language-toggle" type="button" aria-label="Switch language" data-i18n-aria-label="switchLanguage">
+                    <i class="fa-solid fa-globe" aria-hidden="true"></i>
+                    <span data-language-label>ID</span>
+                </button>
+                <button class="upload-top" type="button" onclick="document.getElementById('uploadModal').showModal()">
+                    <i class="fa-solid fa-upload" aria-hidden="true"></i>
+                    <span data-i18n="uploadExcel">Upload Excel</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="workspace">
+            <aside class="sidebar">
+                <nav class="side-nav">
+                    <a href="{{ url_for('index') }}" class="side-link {% if active_tab == 'table' %}active{% endif %}"><i class="fa-solid fa-table-columns" aria-hidden="true"></i><span data-i18n="dashboard">Dashboard</span></a>
+                    <a href="#" class="side-link" onclick="document.getElementById('uploadModal').showModal(); return false;"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i><span data-i18n="uploadExcel">Upload Excel</span></a>
+                </nav>
+
+                <div class="side-divider"></div>
+                <div class="side-label" data-i18n="dataManagement">DATA MANAGEMENT</div>
+                <nav class="side-nav">
+                    <a href="#" class="side-link" data-action="bulk-mode"><i class="fa-solid fa-list-check" aria-hidden="true"></i><span data-i18n="bulkActions">Bulk Actions</span></a>
+                    {% if selected_file %}
+                        <a href="{{ url_for('export_file_route', file_id=selected_file.id) }}" class="side-link"><i class="fa-solid fa-file-export" aria-hidden="true"></i><span data-i18n="exportData">Export Data</span></a>
+                    {% else %}
+                        <a href="#" class="side-link" data-action="needs-file"><i class="fa-solid fa-file-export" aria-hidden="true"></i><span data-i18n="exportData">Export Data</span></a>
+                    {% endif %}
+                </nav>
+
+                <div class="side-divider"></div>
+                <div class="side-label" data-i18n="system">SYSTEM</div>
+                <nav class="side-nav">
+                    <a href="{{ url_for('settings_route') }}" class="side-link {% if active_tab == 'settings' %}active{% endif %}"><i class="fa-solid fa-gear" aria-hidden="true"></i><span data-i18n="settings">Settings</span></a>
+                    <a href="{{ url_for('audit_log_route') }}" class="side-link {% if active_tab == 'audit' %}active{% endif %}"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span data-i18n="auditLog">Audit Log</span></a>
+                    <a href="{{ url_for('trash_route') }}" class="side-link {% if active_tab == 'trash' %}active{% endif %}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span data-i18n="trash">Trash</span></a>
+                </nav>
+            </aside>
+
+            <main class="main-area">
+                <nav id="pageTabs" class="file-tabs" aria-label="Page tabs" tabindex="-1">
+                    {% if selected_file %}
+                        <div class="file-tab {% if active_tab == 'table' %}active{% endif %}" data-tab-id="file:{{ selected_file.id }}" data-tab-kind="file">
+                            <a class="tab-link" href="{{ url_for('index', file_id=selected_file.id) }}">
+                                <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
+                                <span>{{ selected_file.original_name }}</span>
+                            </a>
+                            <button type="button" class="tab-close" data-delete-file-id="{{ selected_file.id }}" aria-label="Delete file">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    {% else %}
+                        <div class="file-tab {% if active_tab == 'table' %}active{% endif %}" data-tab-id="dashboard" data-tab-kind="dashboard">
+                            <a class="tab-link" href="{{ url_for('index') }}">
+                                <i class="fa-solid fa-table-columns" aria-hidden="true"></i>
+                                <span data-i18n="dashboard">Dashboard</span>
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    {% if active_tab == 'edit' and record is defined and record %}
+                        <div class="file-tab active" data-tab-id="edit:{{ record.id }}" data-tab-kind="edit" data-edit-id="{{ record.id }}" data-edit-file-id="{{ record.file_id }}" data-edit-title="Edit #{{ record.id }}" data-edit-url="{{ url_for('edit_record', record_id=record.id) }}">
+                            <a class="tab-link" href="{{ url_for('edit_record', record_id=record.id) }}">
+                                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                                <span>Edit #{{ record.id }}</span>
+                            </a>
+                            <button type="button" class="tab-close" data-close-edit-tab="edit:{{ record.id }}" aria-label="Close edit tab">
+                                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    {% endif %}
+
+                    {% if active_tab == 'settings' %}
+                        <div class="file-tab active" data-tab-id="settings" data-tab-kind="page">
+                            <a class="tab-link" href="{{ url_for('settings_route') }}">
+                                <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                                <span data-i18n="settings">Settings</span>
+                            </a>
+                        </div>
+                    {% elif active_tab == 'audit' %}
+                        <div class="file-tab active" data-tab-id="audit" data-tab-kind="page">
+                            <a class="tab-link" href="{{ url_for('audit_log_route') }}">
+                                <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+                                <span data-i18n="auditLog">Audit Log</span>
+                            </a>
+                        </div>
+                    {% elif active_tab == 'trash' %}
+                        <div class="file-tab active" data-tab-id="trash" data-tab-kind="page">
+                            <a class="tab-link" href="{{ url_for('trash_route') }}">
+                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                                <span data-i18n="trash">Trash</span>
+                            </a>
+                        </div>
+                    {% endif %}
+                </nav>
+
+                <section class="content-scroll">
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            <div class="flash-list">
+                                {% for message in messages %}
+                                    <div class="flash">{{ message }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+
+                    {% block content %}{% endblock %}
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <dialog id="uploadModal" class="upload-modal">
+        <form method="post" action="{{ url_for('index') }}" enctype="multipart/form-data">
+            <div class="modal-head">
+                <h2 data-i18n="uploadExcel">Upload Excel</h2>
+                <button type="button" class="modal-close" onclick="document.getElementById('uploadModal').close()" aria-label="Close upload dialog" data-i18n-aria-label="closeUploadDialog">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </div>
+            <label class="upload-picker" for="excelFileInput">
+                <span class="upload-picker-icon">
+                    <i class="fa-solid fa-file-excel" aria-hidden="true"></i>
+                </span>
+                <span class="upload-picker-copy">
+                    <strong data-i18n="chooseExcelFile">Choose Excel file</strong>
+                    <small id="uploadFileName" data-i18n="noFileChosen">No file chosen</small>
+                </span>
+                <span class="upload-picker-action" data-i18n="browse">Browse</span>
+            </label>
+            <input id="excelFileInput" class="file-input" type="file" name="excel_file" accept=".xlsx" required>
+            <div class="modal-actions">
+                <button type="button" class="ghost-btn" onclick="document.getElementById('uploadModal').close()" data-i18n="cancel">Cancel</button>
+                <button type="submit" class="primary-btn">
+                    <i class="fa-solid fa-upload" aria-hidden="true"></i>
+                    <span data-i18n="uploadExcel">Upload Excel</span>
+                </button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="deleteFileDialog" class="confirm-dialog">
+        <form method="post" id="deleteFileForm">
+            <p data-i18n="deleteFilePrompt">Delete this file and all imported records?</p>
+            <div class="dialog-actions">
+                <button type="button" class="ghost-btn" data-dialog-close data-i18n="cancel">Cancel</button>
+                <button type="submit" class="outline-danger" data-i18n="deleteFile">Delete File</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=10"></script>
+</body>
+</html>
