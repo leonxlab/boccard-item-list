@@ -1,0 +1,53 @@
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.78:5000
+Press CTRL+C to quit
+127.0.0.1 - - [16/Jul/2026 13:51:05] "HEAD / HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:52:19] "GET /edit/5831 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:52:19] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:52:20] "GET /static/images/white-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:52:20] "GET /static/js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:52:20] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 13:52:20] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 13:52:22] "GET /?file_id=4 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:52:31] "GET /edit/5831 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:52:32] "GET /?file_id=4 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:52:35] "GET /edit/5831 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:52:36] "GET /?file_id=4 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:53:25] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:53:34] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:53:35] "GET /edit/5831 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:53:38] "GET /audit-log HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:53:41] "GET /?file_id=4 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:53:41] "GET /?file_id=4 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:53:43] "GET /edit/5831 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:53:44] "GET /?file_id=4 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:53:47] "GET /edit/5833 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:53:49] "GET /?file_id=4 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:53:57] "GET /edit/5833 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:53:58] "GET /edit/5831 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:53:59] "GET /edit/5833 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:55:54] "GET /edit/5833 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:55:54] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:55:54] "GET /static/images/white-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:55:54] "GET /static/js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:55:55] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 13:56:09] "GET /edit/5833 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:56:09] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:56:09] "GET /static/images/white-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:56:09] "GET /static/js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:56:10] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 13:56:10] "GET /edit/5833 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:56:10] "GET /static/css/style.css HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:56:10] "GET /static/images/white-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:56:10] "GET /static/js/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:56:10] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 13:57:02] "GET /?file_id=4 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:57:02] "GET /?file_id=4 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:57:02] "GET /static/css/style.css HTTP/1.1" 304 -
+127.0.0.1 - - [16/Jul/2026 13:57:02] "GET /static/images/white-logo.png HTTP/1.1" 304 -
+127.0.0.1 - - [16/Jul/2026 13:57:03] "GET /static/js/app.js HTTP/1.1" 304 -
+127.0.0.1 - - [16/Jul/2026 13:57:26] "GET /edit/5831 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:57:27] "GET /?file_id=4 HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 13:57:29] "GET /?file_id=4 HTTP/1.1" 200 -
