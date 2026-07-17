@@ -8,7 +8,8 @@
                     <input type="hidden" name="file_id" value="{{ selected_file.id }}">
                     <label class="keyword-search">
                         <span class="search-icon dark"></span>
-                        <input type="search" name="q" value="{{ query }}" placeholder="Search by any keyword..." data-i18n-placeholder="searchByAnyKeyword">
+                        <input type="search" id="dashboardSearchInput" name="q" value="{{ query }}" placeholder="Search by any keyword..." data-i18n-placeholder="searchByAnyKeyword" autocomplete="off" data-file-id="{{ selected_file.id }}">
+                        <div id="dashboardSearchSuggestions" class="search-suggestions" hidden></div>
                     </label>
                     <label>
                         <span data-i18n="filterByTagNumber">Filter by Tag Number</span>

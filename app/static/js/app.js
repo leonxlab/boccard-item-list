@@ -42,17 +42,17 @@ function getDeviceId() {
     }
 
     var cryptoApi = window.crypto || window.msCrypto;
-    var id = 'dev-' + Math.random().toString(16).slice(2, 10).toUpperCase();
-    if (cryptoApi && cryptoApi.getRandomValues) {
+    var id = 'boccard-' + Math.random().toString(16).slice(2, 10).toUpperCase();
+    if (window.crypto && window.crypto.getRandomValues) {
         var values = new Uint32Array(2);
-        cryptoApi.getRandomValues(values);
-        id = 'dev-' + values[0].toString(16).toUpperCase().padStart(8, '0') + values[1].toString(16).toUpperCase().padStart(8, '0');
+        window.crypto.getRandomValues(values);
+        id = 'boccard-' + values[0].toString(16).toUpperCase().padStart(8, '0') + values[1].toString(16).toUpperCase().padStart(8, '0');
     }
     localStorage.setItem('boccardDeviceId', id);
     return id;
 }
 
-var SPLASH_TTL_MS = 24 * 60 * 60 * 1000; // 24 jam
+var SPLASH_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 hari
 
 function shouldShowSplash() {
     var lastShown = localStorage.getItem('boccardSplashLastShown');
@@ -552,6 +552,44 @@ function applyLanguage(language) {
         if (dictionary[key]) {
             element.setAttribute('aria-label', dictionary[key]);
         }
+    });
+
+    document.querySelectorAll('[data-i18n-log]').forEach(function (element) {
+        var msg = element.dataset.i18nLog;
+        if (lang === 'id') {
+            msg = msg.replace(/^Uploaded new workbook (.+)\.$/, "Mengunggah workbook baru $1.");
+            msg = msg.replace(/^Moved workbook (.+) to trash\.$/, "Memindahkan workbook $1 ke tempat sampah.");
+            msg = msg.replace(/^Deleted record (.+)\.$/, "Menghapus record $1.");
+            msg = msg.replace(/^Restored records from temp snapshot (.+)\.$/, "Memulihkan record dari snapshot sementara $1.");
+            msg = msg.replace(/^Opened file tab for (.+)\.$/, "Membuka tab file untuk $1.");
+            msg = msg.replace(/^Restored deleted file (.+)\.$/, "Memulihkan file terhapus $1.");
+            msg = msg.replace(/^Restored deleted record (.+)\.$/, "Memulihkan record terhapus $1.");
+        }
+        element.textContent = msg;
+    });
+
+    document.querySelectorAll('[data-i18n-log-action]').forEach(function (element) {
+        var action = element.dataset.i18nLogAction;
+        if (lang === 'id') {
+            var actionMap = {
+                'upload_file': 'Unggah File',
+                'trash_file': 'Buang File',
+                'delete_record': 'Hapus Record',
+                'restore_backup': 'Pulihkan Backup',
+                'open_tab': 'Buka Tab',
+                'restore_file': 'Pulihkan File',
+                'restore_record': 'Pulihkan Record'
+            };
+            element.textContent = actionMap[action] || action.replace(/_/g, ' ').replace(/\b\w/g, function(l){return l.toUpperCase()});
+        } else {
+            element.textContent = action.replace(/_/g, ' ').replace(/\b\w/g, function(l){return l.toUpperCase()});
+        }
+    });
+
+    document.querySelectorAll('[data-i18n-log-entity]').forEach(function (element) {
+        var entity = element.dataset.i18nLogEntity;
+        // File -> File, Record -> Record. Just capitalize
+        element.textContent = entity.replace(/\b\w/g, function(l){return l.toUpperCase()});
     });
 
     var languageLabel = document.querySelector('[data-language-label]');

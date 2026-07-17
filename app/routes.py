@@ -16,8 +16,11 @@ from app.services.db_service import (
     get_filter_options,
     get_record,
     get_records,
+    get_search_suggestions,
     get_temp_snapshots,
     get_uploaded_files,
+    get_active_devices,
+    update_device_heartbeat,
     restore_deleted_record,
     restore_records_from_snapshot,
     restore_uploaded_file,
@@ -134,6 +137,12 @@ def register_routes(app):
         if selected_file_id:
             file_info = get_file_by_id(int(selected_file_id))
             if file_info:
+                from app.services.db_service import log_action
+                
+                # Log action when a file tab is opened
+                if request.method == "GET" and not request.args.get("q") and not request.args.get("designation_filter") and not request.args.get("remarks_filter"):
+                    log_action("open_tab", "file", file_info["id"], f"Opened file tab for {file_info['original_name']}.")
+                    
                 records = get_records(
                     file_info["id"],
                     query=request.args.get("q"),
@@ -176,6 +185,26 @@ def register_routes(app):
             remarks_filter="",
             active_tab='table',
         )
+
+    @app.route("/search-suggestions")
+    def search_suggestions_route():
+        file_id = request.args.get("file_id")
+        query = request.args.get("q", "")
+        if not file_id or not query:
+            return jsonify({"suggestions": []})
+            
+        suggestions = get_search_suggestions(int(file_id), query)
+        return jsonify({"suggestions": suggestions})
+
+    @app.route("/devices")
+    def get_devices_route():
+        return jsonify({"devices": get_active_devices()})
+
+    @app.route("/devices/heartbeat", methods=["POST"])
+    def heartbeat_route():
+        if g.device_id and g.device_name:
+            update_device_heartbeat(g.device_id, g.device_name)
+        return jsonify({"ok": True})
 
     @app.route("/file/<int:file_id>/delete", methods=["POST"])
     def delete_file_route(file_id):

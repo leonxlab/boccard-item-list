@@ -1,0 +1,30 @@
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.78:5000
+Press CTRL+C to quit
+127.0.0.1 - - [17/Jul/2026 10:31:50] "GET /?file_id=10 HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:31:51] "GET /static/css/style.css?v=15 HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:31:51] "GET /static/images/white-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:31:51] "GET /?file_id=10 HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:31:51] "GET /static/css/style.css?v=15 HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:31:51] "GET /static/images/white-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:31:52] "GET /static/js/app.js?v=16 HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:31:53] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:31:53] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:31:53] "GET /favicon.ico?v=7 HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:31:53] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:31:53] "GET /favicon.ico?v=7 HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:31:54] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [17/Jul/2026 10:32:03] "GET /edit/11597 HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:32:07] "GET /?file_id=10 HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:32:08] "GET /?file_id=10 HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:32:19] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:32:23] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:32:23] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:32:53] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:32:53] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:33:23] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:33:23] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:33:53] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [17/Jul/2026 10:33:53] "GET /devices HTTP/1.1" 200 -

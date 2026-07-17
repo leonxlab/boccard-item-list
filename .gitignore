@@ -1,0 +1,10 @@
+*.xlsx
+*.bat
+*.md
+*.txt
+!requirements.txt
+*.exe
+*.zip
+*.ps1
+__pycache__/
+*.py[cod]

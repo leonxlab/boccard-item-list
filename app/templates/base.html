@@ -111,7 +111,7 @@
                     <i class="fa-solid fa-globe" aria-hidden="true"></i>
                     <span data-language-label>ID</span>
                 </button>
-                {% if can_upload_workbook %}
+                {% if not selected_file %}
                     <button class="upload-top" type="button" onclick="document.getElementById('uploadModal').showModal()">
                         <i class="fa-solid fa-upload" aria-hidden="true"></i>
                         <span data-i18n="uploadExcel">Upload Excel</span>
@@ -124,7 +124,7 @@
             <aside class="sidebar">
                 <nav class="side-nav">
                     <a href="{{ url_for('index') }}" class="side-link {% if active_tab == 'table' %}active{% endif %}"><i class="fa-solid fa-table-columns" aria-hidden="true"></i><span data-i18n="dashboard">Dashboard</span></a>
-                    {% if can_upload_workbook %}
+                    {% if not selected_file %}
                         <a href="#" class="side-link" onclick="document.getElementById('uploadModal').showModal(); return false;"><i class="fa-solid fa-file-arrow-up" aria-hidden="true"></i><span data-i18n="uploadExcel">Upload Excel</span></a>
                     {% endif %}
                 </nav>
@@ -263,6 +263,19 @@
             </div>
         </form>
     </dialog>
+
+    <div id="devicePanel" class="device-panel">
+        <div class="device-panel-head">
+            <strong>Device Activity</strong>
+            <span></span>
+            <button id="devicePanelToggle" type="button" class="device-panel-toggle" aria-label="Toggle device panel">
+                <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="device-panel-body">
+            <div id="deviceList" class="device-list"></div>
+        </div>
+    </div>
 
     <script src="{{ url_for('static', filename='js/app.js') }}?v=16"></script>
 </body>

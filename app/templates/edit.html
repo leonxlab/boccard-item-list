@@ -8,9 +8,14 @@
                 <h2>Edit Record</h2>
                 <p>Editing record ID: {{ record.id }} <span>-</span> Source File: {{ record.original_name }}</p>
             </div>
-            <button class="outline-danger" type="submit" formaction="{{ url_for('delete_record_route', record_id=record.id) }}">
-                Delete Record
-            </button>
+            <div class="edit-head-actions" style="display: flex; gap: 8px; align-items: center;">
+                <a class="ghost-btn" href="{{ url_for('index', file_id=record.file_id) }}" style="padding: 6px 12px; font-size: 0.9rem;">Cancel</a>
+                <a class="ghost-btn" href="{{ url_for('edit_record', record_id=record.id) }}" style="padding: 6px 12px; font-size: 0.9rem;">Reset Changes</a>
+                <button class="primary-btn" type="submit" style="padding: 6px 12px; font-size: 0.9rem;">Save Changes</button>
+                <button class="outline-danger" type="submit" formaction="{{ url_for('delete_record_route', record_id=record.id) }}" style="padding: 6px 12px; font-size: 0.9rem;">
+                    Delete Record
+                </button>
+            </div>
         </div>
 
         <div class="edit-grid">
@@ -77,12 +82,5 @@
             </section>
         </div>
 
-        <div class="edit-actions">
-            <a class="ghost-btn" href="{{ url_for('index', file_id=record.file_id) }}">Cancel</a>
-            <div>
-                <a class="ghost-btn" href="{{ url_for('edit_record', record_id=record.id) }}">Reset Changes</a>
-                <button class="primary-btn" type="submit">Save Changes</button>
-            </div>
-        </div>
     </form>
 {% endblock %}

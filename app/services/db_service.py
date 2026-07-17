@@ -115,6 +115,57 @@ def get_current_device():
     except RuntimeError:
         return None, None
 
+
+def update_device_heartbeat(device_id, device_name):
+    if not device_id:
+        return
+    
+    os.makedirs(TEMP_FOLDER, exist_ok=True)
+    heartbeat_path = os.path.join(TEMP_FOLDER, "devices.json")
+    
+    devices = {}
+    if os.path.exists(heartbeat_path):
+        try:
+            with open(heartbeat_path, "r", encoding="utf-8") as f:
+                devices = json.load(f)
+        except Exception:
+            pass
+            
+    devices[device_id] = {
+        "device_name": device_name,
+        "last_seen": datetime.utcnow().isoformat()
+    }
+    
+    with open(heartbeat_path, "w", encoding="utf-8") as f:
+        json.dump(devices, f)
+
+
+def get_active_devices():
+    heartbeat_path = os.path.join(TEMP_FOLDER, "devices.json")
+    if not os.path.exists(heartbeat_path):
+        return []
+        
+    try:
+        with open(heartbeat_path, "r", encoding="utf-8") as f:
+            devices = json.load(f)
+    except Exception:
+        return []
+        
+    now = datetime.utcnow()
+    results = []
+    for d_id, info in devices.items():
+        last_seen = datetime.fromisoformat(info["last_seen"])
+        is_online = (now - last_seen).total_seconds() < 120 # 2 minutes
+        results.append({
+            "device_id": d_id,
+            "device_name": info["device_name"],
+            "online": is_online
+        })
+        
+    # Sort online first, then by name
+    return sorted(results, key=lambda x: (not x["online"], x["device_name"].lower()))
+
+
 def log_action(action, entity_type, entity_id, message, device_id=None, device_name=None):
     if not device_id or not device_name:
         req_dev_id, req_dev_name = get_current_device()
@@ -241,7 +292,7 @@ def get_temp_snapshots():
     os.makedirs(TEMP_FOLDER, exist_ok=True)
     snapshots = []
     for name in os.listdir(TEMP_FOLDER):
-        if not name.endswith(".json"):
+        if not name.endswith(".json") or name == "devices.json":
             continue
         path = os.path.join(TEMP_FOLDER, name)
         
@@ -473,6 +524,63 @@ def get_filter_options(file_id):
         "designations": [row["designation"] for row in designations],
         "remarks": [row["remarks_in_pid"] for row in remarks],
     }
+
+
+def get_search_suggestions(file_id, query, limit=8):
+    if not query or len(query.strip()) < 1:
+        return []
+        
+    conn = _connect()
+    query_text = f"%{query.strip()}%"
+    
+    # Search in common fields
+    rows = conn.execute(
+        """
+        SELECT remarks_in_pid, boccard_item_number, designation, extra_data
+        FROM records 
+        WHERE file_id = ? AND (
+            remarks_in_pid LIKE ? OR 
+            boccard_item_number LIKE ? OR 
+            designation LIKE ? OR 
+            extra_data LIKE ?
+        )
+        LIMIT 100
+        """,
+        (file_id, query_text, query_text, query_text, query_text)
+    ).fetchall()
+    conn.close()
+    
+    suggestions = set()
+    query_lower = query.strip().lower()
+    
+    for row in rows:
+        # Check designation
+        val = str(row["designation"] or "").strip()
+        if query_lower in val.lower():
+            suggestions.add(val)
+            
+        # Check remarks
+        val = str(row["remarks_in_pid"] or "").strip()
+        if query_lower in val.lower():
+            suggestions.add(val)
+            
+        # Check boccard_item_number
+        val = str(row["boccard_item_number"] or "").strip()
+        if query_lower in val.lower():
+            suggestions.add(val)
+            
+        # Check extra_data values
+        extra = json.loads(row["extra_data"] or "{}")
+        for k, v in extra.items():
+            val = str(v).strip()
+            if query_lower in val.lower():
+                suggestions.add(val)
+                
+    # Sort by how closely they match (starts with query > contains query)
+    sorted_suggestions = sorted(list(suggestions), key=lambda x: (not x.lower().startswith(query_lower), x.lower()))
+    
+    # Filter out empty strings and return up to limit
+    return [s for s in sorted_suggestions if s][:limit]
 
 
 def get_record(record_id):

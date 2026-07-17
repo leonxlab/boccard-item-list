@@ -8,50 +8,50 @@
             {% if page_kind == 'settings' %}
                 <div class="settings-grid">
                     <section class="settings-card">
-                        <h3>Workbook</h3>
+                        <h3 data-i18n="workbook">Workbook</h3>
                         <dl class="system-list">
-                            <dt>Supported upload format</dt>
-                            <dd>.xlsx workbooks</dd>
-                            <dt>Active file tabs</dt>
+                            <dt data-i18n="supportedUploadFormat">Supported upload format</dt>
+                            <dd data-i18n="supportedUploadValue">.xlsx workbooks</dd>
+                            <dt data-i18n="activeFileTabs">Active file tabs</dt>
                             <dd>{{ files|length }}</dd>
-                            <dt>Data source</dt>
-                            <dd>Local SQLite database and uploaded Excel files</dd>
+                            <dt data-i18n="dataSource">Data source</dt>
+                            <dd data-i18n="dataSourceLocal">Local SQLite database and uploaded Excel files</dd>
                         </dl>
                     </section>
 
                     <section class="settings-card">
-                        <h3>Backup & Recovery</h3>
+                        <h3 data-i18n="backupRecovery">Backup & Recovery</h3>
                         <dl class="system-list">
-                            <dt>Autosave snapshots</dt>
-                            <dd>Enabled after import, edit, delete, and repair</dd>
-                            <dt>Snapshot folder</dt>
-                            <dd>temp/*.json</dd>
-                            <dt>Available backups</dt>
+                            <dt data-i18n="autosaveSnapshots">Autosave snapshots</dt>
+                            <dd data-i18n="enabledAfterChanges">Enabled after import, edit, delete, and repair</dd>
+                            <dt data-i18n="snapshotFolder">Snapshot folder</dt>
+                            <dd data-i18n="tempSnapshotFolder">temp/*.json</dd>
+                            <dt data-i18n="availableBackups">Available backups</dt>
                             <dd>{{ snapshots|length }}</dd>
                         </dl>
                     </section>
 
                     <section class="settings-card">
-                        <h3>Data Safety</h3>
+                        <h3 data-i18n="dataSafety">Data Safety</h3>
                         <dl class="system-list">
-                            <dt>Audit log</dt>
-                            <dd>Persistent action history</dd>
-                            <dt>Trash mode</dt>
-                            <dd>Deleted files and records can be restored</dd>
-                            <dt>File close behavior</dt>
-                            <dd>Move to trash, keep source workbook and snapshot</dd>
+                            <dt data-i18n="auditLog">Audit log</dt>
+                            <dd data-i18n="auditLogPersistent">Persistent action history</dd>
+                            <dt data-i18n="trashMode">Trash mode</dt>
+                            <dd data-i18n="trashModeRestore">Deleted files and records can be restored</dd>
+                            <dt data-i18n="fileCloseBehavior">File close behavior</dt>
+                            <dd data-i18n="fileCloseTrash">Move to trash, keep source workbook and snapshot</dd>
                         </dl>
                     </section>
 
                     <section class="settings-card">
-                        <h3>Interface</h3>
+                        <h3 data-i18n="interface">Interface</h3>
                         <dl class="system-list">
-                            <dt>Language switch</dt>
-                            <dd>English / Indonesian</dd>
-                            <dt>Persistent edit tabs</dt>
-                            <dd>Stored in browser local storage</dd>
-                            <dt>Drag tab ordering</dt>
-                            <dd>Enabled</dd>
+                            <dt data-i18n="languageSwitch">Language switch</dt>
+                            <dd data-i18n="languageSwitchValue">English / Indonesian</dd>
+                            <dt data-i18n="persistentEditTabs">Persistent edit tabs</dt>
+                            <dd data-i18n="storedInBrowserLocalStorage">Stored in browser local storage</dd>
+                            <dt data-i18n="dragTabOrdering">Drag tab ordering</dt>
+                            <dd data-i18n="enabled">Enabled</dd>
                         </dl>
                     </section>
                 </div>
@@ -99,6 +99,7 @@
                         <thead>
                             <tr>
                                 <th>Time</th>
+                                <th>Device</th>
                                 <th>Action</th>
                                 <th>Entity</th>
                                 <th>Message</th>
@@ -108,9 +109,17 @@
                             {% for log in audit_logs %}
                                 <tr>
                                     <td>{{ log.created_at|replace('T', ' ') }}</td>
-                                    <td>{{ log.action|replace('_', ' ')|title }}</td>
-                                    <td>{{ log.entity_type|title }} {{ log.entity_id or '' }}</td>
-                                    <td>{{ log.message }}</td>
+                                    <td>
+                                        {% if log.device_name %}
+                                            <strong>{{ log.device_name }}</strong><br>
+                                            <small class="muted">{{ log.device_id }}</small>
+                                        {% else %}
+                                            <span class="muted">Unknown</span>
+                                        {% endif %}
+                                    </td>
+                                    <td data-i18n-log-action="{{ log.action }}">{{ log.action|replace('_', ' ')|title }}</td>
+                                    <td data-i18n-log-entity="{{ log.entity_type }}">{{ log.entity_type|title }} {{ log.entity_id or '' }}</td>
+                                    <td data-i18n-log="{{ log.message }}">{{ log.message }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
