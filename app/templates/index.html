@@ -11,31 +11,41 @@
                         <input type="search" id="dashboardSearchInput" name="q" value="{{ query }}" placeholder="Search by any keyword..." data-i18n-placeholder="searchByAnyKeyword" autocomplete="off" data-file-id="{{ selected_file.id }}">
                         <div id="dashboardSearchSuggestions" class="search-suggestions" hidden></div>
                     </label>
-                    <label>
+                    <label class="filter-combo">
                         <span data-i18n="filterByTagNumber">Filter by Tag Number</span>
-                        <select name="field">
-                            <option value="" data-i18n="all">All</option>
-                            <option value="tag_number" {% if field == 'tag_number' %}selected{% endif %}>Tag Number</option>
-                            <option value="boccard_item_number" {% if field == 'boccard_item_number' %}selected{% endif %}>Boccard Item</option>
-                        </select>
+                        <div class="combo-field">
+                            <input type="text" class="combo-input" name="tag_number_filter" value="{{ tag_number_filter }}" autocomplete="off" placeholder="All" data-i18n-placeholder="all">
+                            <div class="combo-suggestions" hidden>
+                                <button type="button" data-value="" data-i18n="all">All</button>
+                                {% for option in filter_options.tag_numbers %}
+                                    <button type="button" data-value="{{ option }}">{{ option }}</button>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </label>
-                    <label>
+                    <label class="filter-combo">
                         <span data-i18n="filterByDesignation">Filter by Designation</span>
-                        <select name="designation_filter">
-                            <option value="" data-i18n="all">All</option>
-                            {% for option in filter_options.designations %}
-                                <option value="{{ option }}" {% if designation_filter == option %}selected{% endif %}>{{ option }}</option>
-                            {% endfor %}
-                        </select>
+                        <div class="combo-field">
+                            <input type="text" class="combo-input" name="designation_filter" value="{{ designation_filter }}" autocomplete="off" placeholder="All" data-i18n-placeholder="all">
+                            <div class="combo-suggestions" hidden>
+                                <button type="button" data-value="" data-i18n="all">All</button>
+                                {% for option in filter_options.designations %}
+                                    <button type="button" data-value="{{ option }}">{{ option }}</button>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </label>
-                    <label>
+                    <label class="filter-combo">
                         <span data-i18n="filterByRemarks">Filter by Remarks</span>
-                        <select name="remarks_filter">
-                            <option value="" data-i18n="all">All</option>
-                            {% for option in filter_options.remarks %}
-                                <option value="{{ option }}" {% if remarks_filter == option %}selected{% endif %}>{{ option }}</option>
-                            {% endfor %}
-                        </select>
+                        <div class="combo-field">
+                            <input type="text" class="combo-input" name="remarks_filter" value="{{ remarks_filter }}" autocomplete="off" placeholder="All" data-i18n-placeholder="all">
+                            <div class="combo-suggestions" hidden>
+                                <button type="button" data-value="" data-i18n="all">All</button>
+                                {% for option in filter_options.remarks %}
+                                    <button type="button" data-value="{{ option }}">{{ option }}</button>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </label>
                     <button type="submit" class="more-filter"><span class="filter-icon"></span><span data-i18n="apply">Apply</span></button>
                 </form>

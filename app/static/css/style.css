@@ -533,7 +533,10 @@ a {
 
 .file-tab.active {
     color: var(--blue);
-    font-weight: 700;
+    /* No font-weight change here on purpose: switching a tab's font-weight
+       changes its measured text width, which shifts every tab after it.
+       text-shadow below fakes a bold look without altering box size. */
+    text-shadow: 0 0 0.35px currentColor, 0 0 0.35px currentColor;
 }
 
 .file-tab.active::after {
@@ -705,6 +708,54 @@ body:has(.table-page) .content-scroll {
 
 .search-suggestions button:hover,
 .search-suggestions button:focus {
+    outline: 0;
+    background: var(--blue-soft);
+    color: var(--blue);
+}
+
+.filter-combo {
+    position: relative;
+}
+
+.combo-field {
+    position: relative;
+}
+
+.combo-field .combo-input {
+    cursor: text;
+}
+
+.combo-suggestions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 6px);
+    z-index: 40;
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: #fff;
+    box-shadow: var(--shadow);
+    padding: 6px;
+}
+
+.combo-suggestions button {
+    width: 100%;
+    min-height: 32px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: #111827;
+    text-align: left;
+    padding: 7px 10px;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+}
+
+.combo-suggestions button:hover,
+.combo-suggestions button:focus {
     outline: 0;
     background: var(--blue-soft);
     color: var(--blue);
@@ -1106,6 +1157,94 @@ body:has(.table-page) .content-scroll {
     min-height: 0;
     overflow: auto;
     padding-right: 4px;
+}
+
+.edit-smart-bar {
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: #f8fafc;
+    padding: 12px 16px;
+    display: grid;
+    gap: 6px;
+}
+
+.switch-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    width: fit-content;
+}
+
+.switch-input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.switch-track {
+    width: 38px;
+    height: 22px;
+    border-radius: 999px;
+    background: #cbd5e1;
+    position: relative;
+    flex: 0 0 auto;
+    transition: background 140ms ease;
+}
+
+.switch-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    transition: transform 140ms ease;
+}
+
+.switch-input:checked + .switch-track {
+    background: var(--blue);
+}
+
+.switch-input:checked + .switch-track .switch-thumb {
+    transform: translateX(16px);
+}
+
+.switch-input:focus-visible + .switch-track {
+    box-shadow: 0 0 0 3px rgba(0, 78, 203, 0.25);
+}
+
+.switch-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.switch-hint {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.edit-card .combo-field {
+    position: relative;
+}
+
+.edit-card input.locked-field,
+.edit-card input[readonly] {
+    background: #f1f5f9;
+    color: #64748b;
+    cursor: not-allowed;
+    border-color: var(--line-soft, var(--line));
+}
+
+.edit-card input.locked-field:focus,
+.edit-card input[readonly]:focus {
+    box-shadow: none;
+    border-color: var(--line-soft, var(--line));
 }
 
 .edit-head {

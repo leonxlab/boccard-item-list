@@ -18,28 +18,39 @@
             </div>
         </div>
 
+        <div class="edit-smart-bar">
+            <label class="switch-field">
+                <input type="checkbox" id="designationLookupToggle" class="switch-input">
+                <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+                <span class="switch-label" data-i18n="useExistingValuesByDesignation">Use existing values based on Designation</span>
+            </label>
+            <p class="switch-hint" data-i18n="useExistingValuesHint">When enabled, pick Remarks in P&amp;ID Database and Boccard Item Number from values already used for this Designation, instead of typing manually. Only these two fields are editable; all other fields are locked to prevent accidental changes.</p>
+        </div>
+
         <div class="edit-grid">
             <section class="edit-card">
                 <h3>Primary Information</h3>
-                <label class="full-field">
+                <label class="full-field combo-field" data-designation-combo="remarks">
                     <span>Remarks in P&amp;ID Database <b>*</b></span>
-                    <input name="remarks_in_pid" value="{{ record.remarks_in_pid or '' }}" required>
+                    <input name="remarks_in_pid" value="{{ record.remarks_in_pid or '' }}" required autocomplete="off">
+                    <div class="combo-suggestions" hidden></div>
                 </label>
 
                 <div class="field-row">
-                    <label>
+                    <label class="combo-field" data-designation-combo="boccard_items">
                         <span>Boccard Item Number <b>*</b></span>
-                        <input name="boccard_item_number" value="{{ record.boccard_item_number or '' }}" required>
+                        <input name="boccard_item_number" value="{{ record.boccard_item_number or '' }}" required autocomplete="off">
+                        <div class="combo-suggestions" hidden></div>
                     </label>
                     <label>
                         <span>Tag Number <b>*</b></span>
-                        <input name="tag_number" value="{{ record.tag_number or '' }}" required>
+                        <input name="tag_number" class="locked-field" value="{{ record.tag_number or '' }}" readonly required>
                     </label>
                 </div>
 
                 <label class="full-field section-break">
                     <span>Designation <b>*</b></span>
-                    <input name="designation" value="{{ record.designation or '' }}" required>
+                    <input name="designation" id="designationInput" class="locked-field" data-file-id="{{ record.file_id }}" value="{{ record.designation or '' }}" readonly required>
                 </label>
 
                 <h3>Other Details</h3>
@@ -47,7 +58,7 @@
                     {% for key, value in record.extra_data.items() %}
                         <label>
                             <span>{{ key|replace('_', ' ')|title }}</span>
-                            <input name="extra_{{ key }}" value="{{ value }}">
+                            <input name="extra_{{ key }}" class="locked-field" value="{{ value }}" readonly>
                         </label>
                     {% endfor %}
                 </div>

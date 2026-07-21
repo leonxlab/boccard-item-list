@@ -19,6 +19,7 @@ from app.services.db_service import (
     get_search_suggestions,
     get_temp_snapshots,
     get_uploaded_files,
+    get_values_for_designation,
     get_active_devices,
     update_device_heartbeat,
     restore_deleted_record,
@@ -187,7 +188,7 @@ def register_routes(app):
                 from app.services.db_service import log_action
                 
                 # Log action when a file tab is opened
-                if request.method == "GET" and not request.args.get("q") and not request.args.get("designation_filter") and not request.args.get("remarks_filter"):
+                if request.method == "GET" and not request.args.get("q") and not request.args.get("designation_filter") and not request.args.get("remarks_filter") and not request.args.get("tag_number_filter"):
                     log_action("open_tab", "file", file_info["id"], f"Opened file tab for {file_info['original_name']}.")
                     
                 q = request.args.get("q")
@@ -203,8 +204,9 @@ def register_routes(app):
                     field=request.args.get("field"),
                     designation=request.args.get("designation_filter"),
                     remarks=request.args.get("remarks_filter"),
+                    tag_number=request.args.get("tag_number_filter"),
                 )
-                if not request.args.get("q") and not request.args.get("designation_filter") and not request.args.get("remarks_filter"):
+                if not request.args.get("q") and not request.args.get("designation_filter") and not request.args.get("remarks_filter") and not request.args.get("tag_number_filter"):
                     records = repair_empty_import_if_needed(file_info, records)
                 filter_options = get_filter_options(file_info["id"])
                 detail_keys = []
@@ -227,6 +229,7 @@ def register_routes(app):
                     field=request.args.get("field", ""),
                     designation_filter=request.args.get("designation_filter", ""),
                     remarks_filter=request.args.get("remarks_filter", ""),
+                    tag_number_filter=request.args.get("tag_number_filter", ""),
                     active_tab='table',
                     health_score=health_score,
                 )
@@ -237,11 +240,12 @@ def register_routes(app):
             selected_file=None,
             records=[],
             detail_keys=[],
-            filter_options={"designations": [], "remarks": []},
+            filter_options={"designations": [], "remarks": [], "tag_numbers": []},
             query="",
             field="",
             designation_filter="",
             remarks_filter="",
+            tag_number_filter="",
             active_tab='table',
         )
 
@@ -343,6 +347,16 @@ def register_routes(app):
             download_name=filename,
             mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
+
+    @app.route("/records/designation-values")
+    def designation_values_route():
+        file_id = request.args.get("file_id")
+        designation = (request.args.get("designation") or "").strip()
+        if not file_id or not designation:
+            return jsonify({"remarks": [], "boccard_items": [], "pairs": []})
+
+        values = get_values_for_designation(int(file_id), designation)
+        return jsonify(values)
 
     @app.route("/edit/<int:record_id>", methods=["GET", "POST"])
     def edit_record(record_id):

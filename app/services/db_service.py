@@ -526,7 +526,7 @@ def update_uploaded_file_order(file_ids):
     return len(ids)
 
 
-def get_records(file_id, query=None, field=None, designation=None, remarks=None):
+def get_records(file_id, query=None, field=None, designation=None, remarks=None, tag_number=None):
     conn = _connect()
     sql = "SELECT * FROM records WHERE file_id = ?"
     params = [file_id]
@@ -547,6 +547,10 @@ def get_records(file_id, query=None, field=None, designation=None, remarks=None)
     if remarks:
         sql += " AND remarks_in_pid = ?"
         params.append(remarks)
+
+    if tag_number:
+        sql += " AND tag_number = ?"
+        params.append(tag_number)
 
     rows = conn.execute(sql, params).fetchall()
     conn.close()
@@ -604,11 +608,64 @@ def get_filter_options(file_id):
         """,
         (file_id,),
     ).fetchall()
+    tag_numbers = conn.execute(
+        """
+        SELECT DISTINCT tag_number
+        FROM records
+        WHERE file_id = ? AND tag_number IS NOT NULL AND TRIM(tag_number) != ''
+        ORDER BY tag_number
+        """,
+        (file_id,),
+    ).fetchall()
     conn.close()
 
     return {
         "designations": [row["designation"] for row in designations],
         "remarks": [row["remarks_in_pid"] for row in remarks],
+        "tag_numbers": [row["tag_number"] for row in tag_numbers],
+    }
+
+
+def get_values_for_designation(file_id, designation):
+    conn = _connect()
+    remarks_rows = conn.execute(
+        """
+        SELECT DISTINCT remarks_in_pid
+        FROM records
+        WHERE file_id = ? AND designation = ? AND remarks_in_pid IS NOT NULL AND TRIM(remarks_in_pid) != ''
+        ORDER BY remarks_in_pid
+        """,
+        (file_id, designation),
+    ).fetchall()
+    boccard_rows = conn.execute(
+        """
+        SELECT DISTINCT boccard_item_number
+        FROM records
+        WHERE file_id = ? AND designation = ? AND boccard_item_number IS NOT NULL AND TRIM(boccard_item_number) != ''
+        ORDER BY boccard_item_number
+        """,
+        (file_id, designation),
+    ).fetchall()
+    pair_rows = conn.execute(
+        """
+        SELECT DISTINCT boccard_item_number, remarks_in_pid
+        FROM records
+        WHERE file_id = ? AND designation = ?
+            AND boccard_item_number IS NOT NULL AND TRIM(boccard_item_number) != ''
+            AND remarks_in_pid IS NOT NULL AND TRIM(remarks_in_pid) != ''
+        ORDER BY boccard_item_number
+        """,
+        (file_id, designation),
+    ).fetchall()
+    conn.close()
+
+    return {
+        "remarks": [row["remarks_in_pid"] for row in remarks_rows],
+        "boccard_items": [row["boccard_item_number"] for row in boccard_rows],
+        "pairs": [
+            {"boccard_item_number": row["boccard_item_number"], "remarks_in_pid": row["remarks_in_pid"]}
+            for row in pair_rows
+        ],
     }
 
 

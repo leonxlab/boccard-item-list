@@ -17,6 +17,9 @@ function initPageControls() {
     initDeleteFileDialog();
     initDevicePanel();
     initDashboardSearchSuggestions();
+    initFilterCombos();
+    initDesignationLookup();
+    initFilterPersistence();
     initEditTabCloseButtons();
     initTabReorder();
     applyLanguage(getCurrentLanguage());
@@ -329,6 +332,373 @@ function renderDashboardSearchSuggestions(input, list, suggestions) {
     list.hidden = false;
 }
 
+function initFilterCombos() {
+    document.querySelectorAll('.filter-combo .combo-field').forEach(function (field) {
+        if (field.dataset.ready === 'true') {
+            return;
+        }
+        field.dataset.ready = 'true';
+
+        var input = field.querySelector('.combo-input');
+        var list = field.querySelector('.combo-suggestions');
+        if (!input || !list) {
+            return;
+        }
+
+        var options = Array.from(list.querySelectorAll('button'));
+
+        function renderOptions() {
+            var term = input.value.trim().toLowerCase();
+            var visible = 0;
+            options.forEach(function (button) {
+                var isAllOption = button.dataset.value === '';
+                var match = isAllOption || !term || button.textContent.toLowerCase().indexOf(term) !== -1;
+                button.hidden = !match;
+                if (match) {
+                    visible++;
+                }
+            });
+            list.hidden = visible === 0;
+        }
+
+        input.addEventListener('focus', renderOptions);
+        input.addEventListener('input', renderOptions);
+
+        options.forEach(function (button) {
+            button.addEventListener('click', function () {
+                input.value = button.dataset.value || '';
+                list.hidden = true;
+                input.form?.requestSubmit();
+            });
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('.combo-field')) {
+                list.hidden = true;
+            }
+        });
+    });
+}
+
+var FILTER_QUERY_KEYS = ['q', 'tag_number_filter', 'designation_filter', 'remarks_filter'];
+
+function getFilterStorageKey(fileId) {
+    return 'boccardTableFilters:' + fileId;
+}
+
+function persistFilterBarState(form) {
+    var fileIdInput = form.querySelector('input[name="file_id"]');
+    var fileId = fileIdInput && fileIdInput.value;
+    if (!fileId) {
+        return;
+    }
+    var state = {};
+    FILTER_QUERY_KEYS.forEach(function (key) {
+        var field = form.querySelector('[name="' + key + '"]');
+        state[key] = field ? field.value : '';
+    });
+    try {
+        localStorage.setItem(getFilterStorageKey(fileId), JSON.stringify(state));
+    } catch (e) {
+        // ignore storage errors (e.g. private browsing quota)
+    }
+}
+
+// If a URL points at the table page for a file but carries none of the
+// filter query params, check whether we previously saved filters for that
+// file and merge them back in. This is what makes filters survive
+// switching to another tab and back, instead of resetting every time.
+function applyStoredFiltersToUrl(rawUrl) {
+    var url;
+    try {
+        url = new URL(rawUrl, window.location.href);
+    } catch (e) {
+        return null;
+    }
+
+    if (url.pathname !== '/') {
+        return null;
+    }
+    var fileId = url.searchParams.get('file_id');
+    if (!fileId) {
+        return null;
+    }
+
+    var hasAnyFilterParam = FILTER_QUERY_KEYS.some(function (key) {
+        return url.searchParams.has(key);
+    });
+    if (hasAnyFilterParam) {
+        return null;
+    }
+
+    var stored;
+    try {
+        stored = JSON.parse(localStorage.getItem(getFilterStorageKey(fileId)) || 'null');
+    } catch (e) {
+        stored = null;
+    }
+    if (!stored) {
+        return null;
+    }
+
+    var hasStoredValues = FILTER_QUERY_KEYS.some(function (key) {
+        return stored[key];
+    });
+    if (!hasStoredValues) {
+        return null;
+    }
+
+    FILTER_QUERY_KEYS.forEach(function (key) {
+        if (stored[key]) {
+            url.searchParams.set(key, stored[key]);
+        }
+    });
+    return url;
+}
+
+function initFilterPersistence() {
+    var form = document.getElementById('filterBar');
+    if (form && form.dataset.filterPersistReady !== 'true') {
+        form.dataset.filterPersistReady = 'true';
+        form.addEventListener('submit', function () {
+            persistFilterBarState(form);
+        });
+    }
+
+    if (document.body.dataset.filterRestoreReady === 'true') {
+        return;
+    }
+    document.body.dataset.filterRestoreReady = 'true';
+
+    var restoredUrl = applyStoredFiltersToUrl(window.location.href);
+    if (!restoredUrl) {
+        return;
+    }
+
+    fetch(restoredUrl.href, {
+        headers: { 'X-Requested-With': 'fetch', 'X-Device-Name': getDeviceName(), 'X-Device-ID': getDeviceId() }
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error('Request failed');
+            }
+            return response.text();
+        })
+        .then(function (html) {
+            replaceWorkspace(html);
+            window.history.replaceState({}, '', restoredUrl.href);
+        })
+        .catch(function () {
+            // ignore: keep the unfiltered view if the restore request fails
+        });
+}
+
+function initDesignationLookup() {
+    var toggle = document.getElementById('designationLookupToggle');
+    var designationInput = document.getElementById('designationInput');
+    var remarksField = document.querySelector('[data-designation-combo="remarks"]');
+    var boccardField = document.querySelector('[data-designation-combo="boccard_items"]');
+
+    if (!toggle || !designationInput || (!remarksField && !boccardField)) {
+        return;
+    }
+
+    if (toggle.dataset.ready === 'true') {
+        return;
+    }
+    toggle.dataset.ready = 'true';
+
+    var fileId = designationInput.dataset.fileId;
+    var lookupCache = {};
+    var lastValues = { remarks: [], boccard_items: [], pairs: [] };
+    var boccardToRemarksMap = {};
+
+    function buildPairMap(pairs) {
+        var map = {};
+        (pairs || []).forEach(function (pair) {
+            if (pair && pair.boccard_item_number && pair.remarks_in_pid) {
+                map[pair.boccard_item_number] = pair.remarks_in_pid;
+            }
+        });
+        return map;
+    }
+
+    function applyRemarksForBoccardValue(value) {
+        if (!toggle.checked || !remarksField) {
+            return;
+        }
+        var match = boccardToRemarksMap[value];
+        if (!match) {
+            return;
+        }
+        var remarksInput = remarksField.querySelector('input');
+        if (remarksInput && remarksInput.value !== match) {
+            remarksInput.value = match;
+        }
+    }
+
+    var stored = localStorage.getItem('boccardDesignationLookup');
+    toggle.checked = stored !== '0';
+
+    function setEnabled(enabled) {
+        [remarksField, boccardField].forEach(function (field) {
+            if (field) {
+                field.classList.toggle('lookup-enabled', enabled);
+            }
+        });
+        if (!enabled) {
+            hideSuggestions(remarksField);
+            hideSuggestions(boccardField);
+        }
+    }
+
+    function hideSuggestions(field) {
+        var list = field && field.querySelector('.combo-suggestions');
+        if (list) {
+            list.hidden = true;
+        }
+    }
+
+    function renderSuggestions(field, values, input, key) {
+        var list = field && field.querySelector('.combo-suggestions');
+        if (!field || !list) {
+            return;
+        }
+        var term = (input.value || '').trim().toLowerCase();
+        var matches = values.filter(function (value) {
+            return !term || value.toLowerCase().indexOf(term) !== -1;
+        });
+
+        list.innerHTML = '';
+        if (!matches.length) {
+            list.hidden = true;
+            return;
+        }
+
+        matches.slice(0, 20).forEach(function (value) {
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = value;
+            button.addEventListener('click', function () {
+                input.value = value;
+                list.hidden = true;
+                if (key === 'boccard_items') {
+                    applyRemarksForBoccardValue(value);
+                }
+            });
+            list.appendChild(button);
+        });
+        list.hidden = false;
+    }
+
+    function fetchValuesForDesignation(designation) {
+        if (!fileId || !designation) {
+            lastValues = { remarks: [], boccard_items: [], pairs: [] };
+            boccardToRemarksMap = {};
+            return Promise.resolve(lastValues);
+        }
+        if (lookupCache[designation]) {
+            lastValues = lookupCache[designation];
+            boccardToRemarksMap = buildPairMap(lastValues.pairs);
+            return Promise.resolve(lastValues);
+        }
+
+        var url = '/records/designation-values?file_id=' + encodeURIComponent(fileId) +
+            '&designation=' + encodeURIComponent(designation);
+
+        return fetch(url, {
+            headers: { 'X-Requested-With': 'fetch', 'X-Device-Name': getDeviceName(), 'X-Device-ID': getDeviceId() }
+        })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('Lookup failed');
+                }
+                return response.json();
+            })
+            .then(function (payload) {
+                var values = { remarks: payload.remarks || [], boccard_items: payload.boccard_items || [], pairs: payload.pairs || [] };
+                lookupCache[designation] = values;
+                lastValues = values;
+                boccardToRemarksMap = buildPairMap(values.pairs);
+                return values;
+            })
+            .catch(function () {
+                lastValues = { remarks: [], boccard_items: [], pairs: [] };
+                boccardToRemarksMap = {};
+                return lastValues;
+            });
+    }
+
+    function refreshValues() {
+        return fetchValuesForDesignation(designationInput.value.trim());
+    }
+
+    toggle.addEventListener('change', function () {
+        localStorage.setItem('boccardDesignationLookup', toggle.checked ? '1' : '0');
+        setEnabled(toggle.checked);
+        if (toggle.checked) {
+            refreshValues();
+        }
+    });
+
+    var designationDebounce = null;
+    designationInput.addEventListener('input', function () {
+        if (!toggle.checked) {
+            return;
+        }
+        window.clearTimeout(designationDebounce);
+        designationDebounce = window.setTimeout(refreshValues, 200);
+    });
+
+    [remarksField, boccardField].forEach(function (field) {
+        if (!field) {
+            return;
+        }
+        var input = field.querySelector('input');
+        var key = field.dataset.designationCombo;
+        if (!input) {
+            return;
+        }
+
+        input.addEventListener('focus', function () {
+            if (!toggle.checked) {
+                return;
+            }
+            refreshValues().then(function (values) {
+                renderSuggestions(field, values[key] || [], input, key);
+            });
+        });
+
+        input.addEventListener('input', function () {
+            if (!toggle.checked) {
+                return;
+            }
+            renderSuggestions(field, lastValues[key] || [], input, key);
+        });
+
+        if (key === 'boccard_items') {
+            input.addEventListener('blur', function () {
+                if (!toggle.checked) {
+                    return;
+                }
+                applyRemarksForBoccardValue(input.value.trim());
+            });
+        }
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!event.target.closest('.combo-field')) {
+            hideSuggestions(remarksField);
+            hideSuggestions(boccardField);
+        }
+    });
+
+    setEnabled(toggle.checked);
+    if (toggle.checked) {
+        refreshValues();
+    }
+}
+
 var translations = {
     en: {
         auditLog: 'Audit Log',
@@ -412,6 +782,8 @@ var translations = {
         updatedAt: 'Updated At',
         uploadExcel: 'Upload Excel',
         workbook: 'Workbook',
+        useExistingValuesByDesignation: 'Use existing values based on Designation',
+        useExistingValuesHint: 'When enabled, pick Remarks in P&ID Database and Boccard Item Number from values already used for this Designation. Only these two fields are editable; all other fields are locked to prevent accidental changes.',
         languageSwitchValue: 'English / Indonesian',
         persistentEditTabs: 'Persistent edit tabs',
         adminPanel: 'Admin Panel',
@@ -517,6 +889,8 @@ var translations = {
         updatedAt: 'Diperbarui Pada',
         uploadExcel: 'Upload Excel',
         workbook: 'Workbook',
+        useExistingValuesByDesignation: 'Gunakan nilai yang sudah ada berdasarkan Designation',
+        useExistingValuesHint: 'Jika diaktifkan, Remarks in P&ID Database dan Boccard Item Number dipilih dari nilai yang sudah pernah dipakai untuk Designation ini. Hanya kedua field ini yang bisa diedit; field lainnya dikunci agar tidak berubah tanpa sengaja.',
         languageSwitchValue: 'Bahasa Inggris / Bahasa Indonesia',
         persistentEditTabs: 'Tab edit persisten',
         adminPanel: 'Panel Admin',
@@ -883,7 +1257,10 @@ function shouldUseNormalNavigation(link) {
 }
 
 function loadPage(url, pushState) {
-    fetch(url, { headers: { 'X-Requested-With': 'fetch', 'X-Device-Name': getDeviceName(), 'X-Device-ID': getDeviceId() } })
+    var restoredUrl = applyStoredFiltersToUrl(url);
+    var finalUrl = restoredUrl ? restoredUrl.href : url;
+
+    fetch(finalUrl, { headers: { 'X-Requested-With': 'fetch', 'X-Device-Name': getDeviceName(), 'X-Device-ID': getDeviceId() } })
         .then(function (response) {
             if (!response.ok) {
                 throw new Error('Request failed');
@@ -893,11 +1270,11 @@ function loadPage(url, pushState) {
         .then(function (html) {
             replaceWorkspace(html);
             if (pushState) {
-                window.history.pushState({}, '', url);
+                window.history.pushState({}, '', finalUrl);
             }
         })
         .catch(function () {
-            window.location.href = url;
+            window.location.href = finalUrl;
         });
 }
 
@@ -1025,6 +1402,11 @@ function syncPersistentEditTabs() {
     });
 
     applyStoredTabOrder();
+    // Persist the resulting order immediately. Without this, a tab's
+    // position is only remembered after a manual drag, so simply clicking
+    // between tabs would keep resetting the active one back to the slot
+    // the server renders it in (right after the file tab).
+    saveCurrentTabOrder();
 }
 
 function initEditTabCloseButtons() {
@@ -1235,17 +1617,35 @@ function applyStoredTabOrder() {
     }
 
     var order = getStoredTabOrder();
-    if (!order.length) {
-        return;
-    }
-
-    var byId = new Map(Array.from(tabs.querySelectorAll('[data-tab-id]')).map(function (tab) {
+    var allTabs = Array.from(tabs.querySelectorAll('[data-tab-id]'));
+    var byId = new Map(allTabs.map(function (tab) {
         return [tab.dataset.tabId, tab];
     }));
 
+    // The file/dashboard tab represents whichever view is currently open.
+    // It always stays first and isn't part of the reorderable tab set.
+    var pinned = allTabs.find(function (tab) {
+        return tab.dataset.tabKind === 'file' || tab.dataset.tabKind === 'dashboard';
+    });
+    if (pinned) {
+        tabs.appendChild(pinned);
+    }
+
     order.forEach(function (id) {
         var tab = byId.get(id);
-        if (tab) {
+        if (tab && tab !== pinned) {
+            tabs.appendChild(tab);
+        }
+    });
+
+    // Any tab not yet in the saved order (a genuinely new tab) goes to the
+    // end, keeping its current relative position, rather than displacing
+    // tabs that already have a known place.
+    allTabs.forEach(function (tab) {
+        if (tab === pinned) {
+            return;
+        }
+        if (order.indexOf(tab.dataset.tabId) === -1) {
             tabs.appendChild(tab);
         }
     });
