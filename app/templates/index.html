@@ -56,15 +56,6 @@
                 </form>
 
                 {% if records %}
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #eaeaea;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="font-weight: 600; color: #333;"><i class="fa-solid fa-heart-pulse" style="color: {% if health_score < 80 %}#ef4444{% else %}#10b981{% endif %};"></i> Data Health Score</span>
-                            <span style="font-weight: bold; color: {% if health_score < 80 %}#ef4444{% else %}#10b981{% endif %};">{{ health_score }}%</span>
-                        </div>
-                        <div style="width: 100%; background: #e9ecef; border-radius: 4px; height: 8px; overflow: hidden;">
-                            <div style="width: {{ health_score }}%; background: {% if health_score < 80 %}#ef4444{% else %}#10b981{% endif %}; height: 100%; transition: width 0.5s ease;"></div>
-                        </div>
-                    </div>
 
                     <div class="table-controls" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                         <button id="toggleDetailsColumns" class="show-more-btn" type="button" aria-expanded="false" data-i18n="showMoreDetails">Show More Details</button>
