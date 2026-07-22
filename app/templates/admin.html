@@ -39,12 +39,12 @@
                         </select>
                     </div>
                     <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Client ID</label>
-                        <input type="text" name="accurate_client_id" value="{{ accurate_client_id }}" placeholder="Enter Accurate Client ID" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                        <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Client ID <span style="color:#999; font-weight:normal;">(set via .env: ACCURATE_CLIENT_ID)</span></label>
+                        <input type="text" name="accurate_client_id" value="{{ accurate_client_id }}" placeholder="Set ACCURATE_CLIENT_ID in .env" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; background:#eee;" readonly>
                     </div>
                     <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Client Secret</label>
-                        <input type="password" name="accurate_client_secret" value="{{ accurate_client_secret }}" placeholder="Enter Accurate Client Secret" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                        <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Client Secret <span style="color:#999; font-weight:normal;">(set via .env: ACCURATE_CLIENT_SECRET)</span></label>
+                        <input type="password" name="accurate_client_secret" value="{{ accurate_client_secret }}" placeholder="Set ACCURATE_CLIENT_SECRET in .env" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; background:#eee;" readonly>
                     </div>
                     <button type="button" class="ghost-btn integration-test-btn" data-integration="accurate" style="padding: 6px 12px; font-size: 0.85rem;">Test Connection</button>
                     <div class="integration-test-result" data-integration-result="accurate" style="margin-top: 8px; font-size: 12px; display: none;"></div>
@@ -61,12 +61,12 @@
                         </select>
                     </div>
                     <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Project URL</label>
-                        <input type="url" name="supabase_url" value="{{ supabase_url }}" placeholder="https://xyzcompany.supabase.co" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                        <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Project URL <span style="color:#999; font-weight:normal;">(set via .env: SUPABASE_URL)</span></label>
+                        <input type="url" name="supabase_url" value="{{ supabase_url }}" placeholder="Set SUPABASE_URL in .env" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; background:#eee;" readonly>
                     </div>
                     <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Anon / Service Key</label>
-                        <input type="password" name="supabase_key" value="{{ supabase_key }}" placeholder="Enter Supabase Key" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+                        <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Anon / Service Key <span style="color:#999; font-weight:normal;">(set via .env: SUPABASE_KEY)</span></label>
+                        <input type="password" name="supabase_key" value="{{ supabase_key }}" placeholder="Set SUPABASE_KEY in .env" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; background:#eee;" readonly>
                     </div>
                     <div style="margin-bottom: 10px;">
                         <label style="display: block; font-size: 13px; color: #555; margin-bottom: 4px;">Table Name</label>

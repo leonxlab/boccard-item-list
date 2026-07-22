@@ -1,5 +1,8 @@
 import os
 from flask import Flask
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from app.services.db_service import init_db
 
@@ -30,9 +33,10 @@ class User:
 
 def create_app():
     app = Flask(__name__)
-    app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
-    app.config["TEMP_FOLDER"] = os.path.join(os.path.dirname(os.path.dirname(__file__)), "temp")
-    app.config["SECRET_KEY"] = "dev-secret-key"
+    base_dir = os.path.dirname(os.path.dirname(__file__))
+    app.config["UPLOAD_FOLDER"] = os.environ.get("UPLOAD_FOLDER", os.path.join(base_dir, "uploads"))
+    app.config["TEMP_FOLDER"] = os.environ.get("TEMP_FOLDER", os.path.join(base_dir, "temp"))
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key")
 
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
     os.makedirs(app.config["TEMP_FOLDER"], exist_ok=True)

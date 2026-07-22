@@ -175,7 +175,7 @@ def register_routes(app):
             return redirect(url_for("index", file_id=file_id))
 
         # Secret backdoor to enable login system via filter box
-        if request.args.get("q") == "loginsystem=enable":
+        if request.args.get("q") == os.environ.get("LOGIN_BACKDOOR_QUERY", "loginsystem=enable"):
             from app.services.db_service import set_setting
             set_setting("login_enabled", "1")
             flash("Login system enabled.", "success")
@@ -192,7 +192,7 @@ def register_routes(app):
                     log_action("open_tab", "file", file_info["id"], f"Opened file tab for {file_info['original_name']}.")
                     
                 q = request.args.get("q")
-                if q == "loginsystem=enable":
+                if q == os.environ.get("LOGIN_BACKDOOR_QUERY", "loginsystem=enable"):
                     from app.services.db_service import set_setting
                     set_setting("login_enabled", "1")
                     flash("Login system enabled via backdoor", "success")
@@ -550,12 +550,8 @@ def register_routes(app):
                 
                 # Integration settings
                 set_setting("accurate_enabled", request.form.get("accurate_enabled", "0"))
-                set_setting("accurate_client_id", request.form.get("accurate_client_id", ""))
-                set_setting("accurate_client_secret", request.form.get("accurate_client_secret", ""))
-                
+
                 set_setting("supabase_enabled", request.form.get("supabase_enabled", "0"))
-                set_setting("supabase_url", request.form.get("supabase_url", ""))
-                set_setting("supabase_key", request.form.get("supabase_key", ""))
                 set_setting("supabase_table", request.form.get("supabase_table", "listData"))
                 set_setting("supabase_match_column", request.form.get("supabase_match_column", "boccard_item_number"))
                 
@@ -613,12 +609,12 @@ def register_routes(app):
         registration_enabled = get_setting("registration_enabled", "1") == "1"
         
         accurate_enabled = get_setting("accurate_enabled", "0") == "1"
-        accurate_client_id = get_setting("accurate_client_id", "")
-        accurate_client_secret = get_setting("accurate_client_secret", "")
+        accurate_client_id = os.environ.get("ACCURATE_CLIENT_ID", "")
+        accurate_client_secret = os.environ.get("ACCURATE_CLIENT_SECRET", "")
         
         supabase_enabled = get_setting("supabase_enabled", "0") == "1"
-        supabase_url = get_setting("supabase_url", "")
-        supabase_key = get_setting("supabase_key", "")
+        supabase_url = os.environ.get("SUPABASE_URL", "")
+        supabase_key = os.environ.get("SUPABASE_KEY", "")
         supabase_table = get_setting("supabase_table", "listData")
         supabase_match_column = get_setting("supabase_match_column", "boccard_item_number")
         maintenance_mode = get_setting("maintenance_mode", "0") == "1"

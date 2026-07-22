@@ -8,3 +8,4 @@
 *.ps1
 __pycache__/
 *.py[cod]
+.env

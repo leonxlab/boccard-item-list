@@ -12,6 +12,7 @@ Integration helpers for the external services configured in the Admin panel:
 
 import base64
 import json
+import os
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -44,8 +45,8 @@ def _http_request(url, method="GET", headers=None, data=None, timeout=10):
 def get_supabase_settings():
     return {
         "enabled": get_setting("supabase_enabled", "0") == "1",
-        "url": (get_setting("supabase_url", "") or "").rstrip("/"),
-        "key": get_setting("supabase_key", "") or "",
+        "url": (os.environ.get("SUPABASE_URL", "") or "").rstrip("/"),
+        "key": os.environ.get("SUPABASE_KEY", "") or "",
         "table": get_setting("supabase_table", "listData") or "listData",
         "match_column": get_setting("supabase_match_column", "boccard_item_number") or "boccard_item_number",
     }
@@ -152,8 +153,8 @@ def test_accurate_credentials(client_id=None, client_secret=None):
                                            just no valid token/code (expected)
     """
     settings_enabled = get_setting("accurate_enabled", "0") == "1"
-    client_id = client_id or get_setting("accurate_client_id", "")
-    client_secret = client_secret or get_setting("accurate_client_secret", "")
+    client_id = client_id or os.environ.get("ACCURATE_CLIENT_ID", "")
+    client_secret = client_secret or os.environ.get("ACCURATE_CLIENT_SECRET", "")
 
     if not settings_enabled and client_id is None:
         return {"success": False, "message": "Accurate.id integration is disabled."}
