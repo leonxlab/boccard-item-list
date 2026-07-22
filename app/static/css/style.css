@@ -601,6 +601,30 @@ body:has(.table-page) .content-scroll {
     border-radius: 7px;
     padding: 11px 14px;
     font-size: 13px;
+    display: flex;
+    align-items: center;
+}
+
+.flash-success {
+    background: #f0fdf4;
+    border-color: #86efac;
+    color: #15803d;
+}
+
+.flash-danger {
+    background: #fef2f2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+}
+
+.flash-warning {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+#notifMarkAllRead:hover {
+    background: #f1f5f9;
 }
 
 .table-page {
@@ -1945,6 +1969,27 @@ body:has(.table-page) .content-scroll {
 
 .device-item.online em {
     color: #087a34;
+}
+
+.device-delete-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid #ff9f9f;
+    background: #fff;
+    color: var(--red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 11px;
+    flex-shrink: 0;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.device-delete-btn:hover {
+    background: var(--red);
+    color: #fff;
 }
 
 .splash-screen {

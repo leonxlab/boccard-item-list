@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="profile-page">
+    <div class="profile-header">
+        <h2 data-i18n="myProfile">My Profile</h2>
+        <p class="profile-subtitle">Manage your account settings and security preferences.</p>
+    </div>
+
+    <!-- Profile Picture -->
+    <div class="profile-card">
+        <div class="profile-card-header">
+            <div class="profile-card-icon" style="background:#eff6ff; color:#2563eb;">
+                <i class="fa-solid fa-camera" aria-hidden="true"></i>
+            </div>
+            <div>
+                <h3 data-i18n="profilePicture">Profile Picture</h3>
+                <p class="muted" style="font-size:13px; margin:0;">PNG, JPG, GIF, or WEBP · Max 5MB</p>
+            </div>
+        </div>
+        <div class="profile-card-body">
+            <div class="avatar-row">
+                <div class="avatar-circle">
+                    {% if profile_user.profile_picture %}
+                        <img src="{{ url_for('static', filename='profile_pics/' + profile_user.profile_picture) }}" alt="Profile picture">
+                    {% else %}
+                        <i class="fa-solid fa-user" aria-hidden="true"></i>
+                    {% endif %}
+                </div>
+                <div class="avatar-actions">
+                    <form method="post" action="{{ url_for('profile') }}" enctype="multipart/form-data" class="avatar-upload-form">
+                        <input type="hidden" name="action" value="update_picture">
+                        <label class="avatar-file-label">
+                            <i class="fa-solid fa-upload"></i> Choose Image
+                            <input type="file" name="profile_picture" accept=".png,.jpg,.jpeg,.gif,.webp" required style="display:none;" onchange="this.closest('form').querySelector('.avatar-filename').textContent = this.files[0]?.name || 'No file chosen'">
+                        </label>
+                        <span class="avatar-filename muted" style="font-size:12px;">No file chosen</span>
+                        <button type="submit" class="primary-btn" data-i18n="uploadPicture">Upload</button>
+                    </form>
+                    {% if profile_user.profile_picture %}
+                        <form method="post" action="{{ url_for('profile') }}" onsubmit="return confirm('Remove your profile picture?');">
+                            <input type="hidden" name="action" value="remove_picture">
+                            <button type="submit" class="outline-danger">
+                                <i class="fa-solid fa-trash-can"></i> Remove
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Details -->
+    <div class="profile-card">
+        <div class="profile-card-header">
+            <div class="profile-card-icon" style="background:#f0fdf4; color:#16a34a;">
+                <i class="fa-solid fa-user-pen" aria-hidden="true"></i>
+            </div>
+            <div>
+                <h3 data-i18n="accountDetails">Account Details</h3>
+                <p class="muted" style="font-size:13px; margin:0;">Update your username or change your password.</p>
+            </div>
+        </div>
+        <div class="profile-card-body">
+            <form method="post" action="{{ url_for('profile') }}" class="profile-form">
+                <input type="hidden" name="action" value="update_profile">
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="username">Username</label>
+                        <input type="text" name="username" value="{{ profile_user.username }}" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="email">Email</label>
+                        <input type="text" value="{{ profile_user.email or '-' }}" disabled class="form-input" style="background:#f8f9fa; color:#888;">
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="role">Role</label>
+                        <div class="form-static">
+                            <span class="role-badge role-{{ profile_user.role }}">{{ profile_user.role }}</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="status">Status</label>
+                        <div class="form-static">
+                            <span class="status-badge status-{{ profile_user.status }}">{{ profile_user.status }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-divider"></div>
+                <p class="form-section-label"><i class="fa-solid fa-lock"></i> Change Password <span class="muted">(leave blank to keep current)</span></p>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="newPassword">New Password</label>
+                        <input type="password" name="new_password" placeholder="Min. 6 characters" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="confirmNewPassword">Confirm Password</label>
+                        <input type="password" name="confirm_password" placeholder="Repeat new password" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-current-password">
+                    <i class="fa-solid fa-shield-halved" style="color:#f59e0b; margin-right:6px;"></i>
+                    <div style="flex:1;">
+                        <label class="form-label" data-i18n="currentPassword">
+                            Current Password <span style="color:#dc3545;">*</span>
+                        </label>
+                        <p class="muted" style="font-size:12px; margin:2px 0 8px;">Required to save any changes above.</p>
+                        <input type="password" name="current_password" required placeholder="Enter your current password" class="form-input" style="max-width:320px;">
+                    </div>
+                </div>
+
+                <div style="margin-top:18px;">
+                    <button type="submit" class="primary-btn" data-i18n="saveChanges">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Account Security / 2FA -->
+    <div class="profile-card">
+        <div class="profile-card-header">
+            <div class="profile-card-icon" style="background:#fef9ee; color:#d97706;">
+                <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+            </div>
+            <div>
+                <h3>Account Security</h3>
+                <p class="muted" style="font-size:13px; margin:0;">Protect your account with two-factor authentication.</p>
+            </div>
+        </div>
+        <div class="profile-card-body">
+
+            <!-- 2FA Section -->
+            <div class="security-row">
+                <div class="security-info">
+                    <div class="security-title">
+                        <span>Two-Factor Authentication (2FA)</span>
+                        {% if twofa_enabled %}
+                            <span class="status-pill status-pill-green"><i class="fa-solid fa-circle-check"></i> Enabled</span>
+                        {% else %}
+                            <span class="status-pill status-pill-red"><i class="fa-solid fa-circle-xmark"></i> Disabled</span>
+                        {% endif %}
+                    </div>
+                    <p class="muted" style="font-size:13px; margin:4px 0 0;">
+                        {% if twofa_enabled %}
+                            Your account requires an authenticator code at every login.
+                        {% else %}
+                            Add an extra layer of protection to your account.
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="security-action">
+                    {% if twofa_enabled %}
+                        <button type="button" class="outline-danger" onclick="document.getElementById('disable2faModal').style.display='flex'">
+                            <i class="fa-solid fa-shield-xmark"></i> Disable 2FA
+                        </button>
+                    {% else %}
+                        <form method="post" action="{{ url_for('twofa_setup') }}">
+                            <button type="submit" class="primary-btn">
+                                <i class="fa-solid fa-shield-plus"></i> Set Up 2FA
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-divider"></div>
+
+            <!-- Login History Section -->
+            <div class="security-row" style="margin-bottom:0;">
+                <div class="security-info">
+                    <div class="security-title">Login History</div>
+                    <p class="muted" style="font-size:13px; margin:4px 0 0;">Review recent sign-in activity on your account.</p>
+                </div>
+                <div class="security-action">
+                    <a href="{{ url_for('login_history_route') }}" class="ghost-btn" style="text-decoration:none;">
+                        <i class="fa-solid fa-clock-rotate-left"></i> View History
+                    </a>
+                </div>
+            </div>
+
+            {% if login_history %}
+            <div class="login-history-list">
+                {% for entry in login_history[:5] %}
+                    <div class="login-history-entry">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            {% if entry.status == 'success' %}
+                                <span class="status-pill status-pill-green"><i class="fa-solid fa-circle-check"></i> Success</span>
+                            {% else %}
+                                <span class="status-pill status-pill-red"><i class="fa-solid fa-circle-xmark"></i> Failed</span>
+                            {% endif %}
+                            <span style="font-size:13px;">{{ entry.device_name or 'Unknown device' }}</span>
+                        </div>
+                        <span class="muted" style="font-size:12px;">{{ entry.created_at.replace('T', ' ')[:19] }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<!-- Disable 2FA Modal -->
+<div id="disable2faModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:14px; padding:30px; width:400px; max-width:92vw; box-shadow:0 20px 60px rgba(0,0,0,0.25); position:relative;">
+        <button onclick="document.getElementById('disable2faModal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#888;">&times;</button>
+        <div style="text-align:center; margin-bottom:20px;">
+            <div style="width:52px; height:52px; border-radius:50%; background:#fef2f2; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:22px; color:#dc3545;">
+                <i class="fa-solid fa-shield-xmark"></i>
+            </div>
+            <h3 style="margin:0 0 6px;">Disable Two-Factor Authentication?</h3>
+            <p class="muted" style="font-size:13px; margin:0;">Enter your current password to confirm. This will remove 2FA from your account.</p>
+        </div>
+        <form method="post" action="{{ url_for('twofa_disable') }}" onsubmit="return confirm('Are you sure you want to disable 2FA?');">
+            <div class="form-group">
+                <label class="form-label">Current Password <span style="color:#dc3545;">*</span></label>
+                <input type="password" name="current_password" required placeholder="Enter your password" class="form-input" autofocus>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button type="button" class="ghost-btn" style="flex:1;" onclick="document.getElementById('disable2faModal').style.display='none'">Cancel</button>
+                <button type="submit" class="outline-danger" style="flex:1;">
+                    <i class="fa-solid fa-shield-xmark"></i> Disable 2FA
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.profile-page { padding: 24px; max-width: 820px; margin: 0 auto; }
+.profile-header { margin-bottom: 24px; }
+.profile-header h2 { margin:0 0 4px; font-size:22px; }
+.profile-subtitle { color:#64748b; font-size:14px; margin:0; }
+
+.profile-card { background:#fff; border-radius:12px; box-shadow:0 1px 4px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04); margin-bottom:20px; overflow:hidden; }
+.profile-card-header { display:flex; align-items:center; gap:14px; padding:18px 22px; border-bottom:1px solid #f1f5f9; background:#fafbfc; }
+.profile-card-header h3 { margin:0 0 2px; font-size:15px; }
+.profile-card-icon { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.profile-card-body { padding:22px; }
+
+.avatar-row { display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+.avatar-circle { width:84px; height:84px; border-radius:50%; overflow:hidden; background:#eef2f7; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:2px solid #e2e8f0; font-size:30px; color:#9aa7b8; }
+.avatar-circle img { width:100%; height:100%; object-fit:cover; }
+.avatar-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.avatar-upload-form { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.avatar-file-label { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border:1px solid #e2e8f0; border-radius:6px; background:#f8fafc; cursor:pointer; font-size:13px; font-weight:600; color:#374151; transition:background .15s; }
+.avatar-file-label:hover { background:#eef2f7; }
+
+.profile-form { }
+.form-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+@media(max-width:560px) { .form-grid-2 { grid-template-columns:1fr; } }
+.form-group { display:flex; flex-direction:column; gap:6px; }
+.form-label { font-weight:600; font-size:13px; color:#374151; }
+.form-input { padding:9px 12px; border:1px solid #e2e8f0; border-radius:7px; font-size:14px; width:100%; box-sizing:border-box; transition:border-color .15s, box-shadow .15s; }
+.form-input:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.12); }
+.form-static { display:flex; align-items:center; min-height:38px; }
+.form-divider { border:none; border-top:1px solid #f1f5f9; margin:20px 0; }
+.form-section-label { font-size:13px; font-weight:600; color:#475569; margin:0 0 16px; }
+.form-current-password { display:flex; gap:12px; align-items:flex-start; background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:16px; margin-top:4px; }
+
+.role-badge, .status-badge { padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; text-transform:capitalize; }
+.role-admin { background:#dbeafe; color:#1d4ed8; }
+.role-user { background:#f3f4f6; color:#374151; }
+.status-active { background:#dcfce7; color:#15803d; }
+.status-disabled { background:#fee2e2; color:#b91c1c; }
+
+.security-row { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+.security-info { flex:1; min-width:200px; }
+.security-title { display:flex; align-items:center; gap:10px; font-weight:600; font-size:14px; flex-wrap:wrap; }
+.security-action { flex-shrink:0; }
+
+.status-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; }
+.status-pill-green { background:#dcfce7; color:#15803d; }
+.status-pill-red { background:#fee2e2; color:#b91c1c; }
+
+.login-history-list { margin-top:16px; border-radius:8px; border:1px solid #f1f5f9; overflow:hidden; }
+.login-history-entry { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid #f8fafc; font-size:13px; }
+.login-history-entry:last-child { border-bottom:none; }
+.login-history-entry:nth-child(even) { background:#fafbfc; }
+</style>
+{% endblock %}

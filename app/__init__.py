@@ -14,6 +14,7 @@ class User:
         self.email = user_dict["email"]
         self.role = user_dict["role"]
         self.status = user_dict["status"]
+        self.profile_picture = user_dict.get("profile_picture") if hasattr(user_dict, "get") else None
         
     @property
     def is_authenticated(self):

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="padding: 20px; max-width: 900px; margin: 0 auto;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 20px;">
+        <h2>Login History</h2>
+        <a href="{{ url_for('profile') }}" class="ghost-btn" style="text-decoration:none; display:inline-block;">Back to Profile</a>
+    </div>
+
+    <div style="background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow: hidden;">
+        {% if history %}
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa; text-align: left;">
+                    <th style="padding: 12px; border-bottom: 1px solid #eee;">Date / Time (UTC)</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #eee;">Status</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #eee;">Device</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #eee;">IP Address</th>
+                    <th style="padding: 12px; border-bottom: 1px solid #eee;">Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in history %}
+                <tr>
+                    <td style="padding: 12px; border-bottom: 1px solid #f2f2f2;">{{ entry.created_at.replace('T', ' ')[:19] }}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #f2f2f2;">
+                        {% if entry.status == 'success' %}
+                            <span class="badge" style="background:#e6f4ea; color:#1e7e34;">Success</span>
+                        {% else %}
+                            <span class="badge" style="background:#fdecea; color:#c62828;">Failed</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px; border-bottom: 1px solid #f2f2f2;">{{ entry.device_name or '-' }}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #f2f2f2;">{{ entry.ip_address or '-' }}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #f2f2f2; color:#777;">{{ entry.reason or '-' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="padding: 20px; color: #777;">No login activity recorded yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

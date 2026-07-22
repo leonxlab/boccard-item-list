@@ -52,7 +52,8 @@ def init_db(upload_folder=None, temp_folder=None):
             stored_name TEXT NOT NULL,
             uploaded_at TEXT NOT NULL,
             tab_order INTEGER NOT NULL DEFAULT 0,
-            status TEXT DEFAULT 'active'
+            status TEXT DEFAULT 'active',
+            user_id INTEGER
         )
         """
     )
@@ -105,10 +106,16 @@ def init_db(upload_folder=None, temp_folder=None):
         conn.execute("ALTER TABLE uploaded_files ADD COLUMN status TEXT DEFAULT 'active'")
     if "deleted_at" not in columns:
         conn.execute("ALTER TABLE uploaded_files ADD COLUMN deleted_at TEXT")
+    if "user_id" not in columns:
+        conn.execute("ALTER TABLE uploaded_files ADD COLUMN user_id INTEGER")
         
     records_cols = {row[1] for row in conn.execute("PRAGMA table_info(records)").fetchall()}
     if 'category' not in records_cols:
         conn.execute("ALTER TABLE records ADD COLUMN category TEXT")
+
+    users_columns = {row[1] for row in conn.execute("PRAGMA table_info(users)").fetchall()}
+    if "profile_picture" not in users_columns:
+        conn.execute("ALTER TABLE users ADD COLUMN profile_picture TEXT")
 
     # Ensure default admin exists
     admin = conn.execute("SELECT * FROM users WHERE username = 'suboccard'").fetchone()
@@ -139,6 +146,57 @@ def init_db(upload_folder=None, temp_folder=None):
         conn.execute("ALTER TABLE deleted_records ADD COLUMN user_id INTEGER")
     if "user_name" not in deleted_columns:
         conn.execute("ALTER TABLE deleted_records ADD COLUMN user_name TEXT")
+
+    # --- Notifications ---
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            message TEXT,
+            category TEXT DEFAULT 'general',
+            link TEXT,
+            is_read INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL,
+            read_at TEXT
+        )
+        """
+    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read)")
+
+    # --- Two-Factor Authentication ---
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS user_2fa (
+            user_id INTEGER PRIMARY KEY,
+            secret TEXT NOT NULL,
+            enabled INTEGER NOT NULL DEFAULT 0,
+            backup_codes TEXT,
+            created_at TEXT NOT NULL,
+            confirmed_at TEXT
+        )
+        """
+    )
+
+    # --- Login History ---
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS login_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            username TEXT NOT NULL,
+            status TEXT NOT NULL,
+            reason TEXT,
+            ip_address TEXT,
+            user_agent TEXT,
+            device_id TEXT,
+            device_name TEXT,
+            created_at TEXT NOT NULL
+        )
+        """
+    )
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_login_history_user ON login_history(user_id, created_at)")
 
 
     ordered_rows = conn.execute(
@@ -243,14 +301,22 @@ def log_action(action, entity_type, entity_id, message, device_id=None, device_n
     conn.close()
 
 
-def save_uploaded_file(original_name, stored_name):
+def _owner_clause(user_id, column="user_id"):
+    """Returns a SQL clause + params fragment that scopes rows to a given owner.
+    user_id=None means the "guest / shared" bucket (used when login is disabled)."""
+    if user_id is None:
+        return f"{column} IS NULL", []
+    return f"{column} = ?", [user_id]
+
+
+def save_uploaded_file(original_name, stored_name, user_id=None):
     conn = _connect()
     now = datetime.utcnow().isoformat()
     next_order_row = conn.execute("SELECT COALESCE(MAX(tab_order), -1) + 1 AS next_order FROM uploaded_files").fetchone()
     next_order = next_order_row["next_order"] if next_order_row else 0
     cursor = conn.execute(
-        "INSERT INTO uploaded_files (original_name, stored_name, uploaded_at, tab_order, status) VALUES (?, ?, ?, ?, ?)",
-        (original_name, stored_name, now, next_order, "active"),
+        "INSERT INTO uploaded_files (original_name, stored_name, uploaded_at, tab_order, status, user_id) VALUES (?, ?, ?, ?, ?, ?)",
+        (original_name, stored_name, now, next_order, "active", user_id),
     )
     file_id = cursor.lastrowid
     conn.commit()
@@ -398,7 +464,7 @@ def get_temp_snapshots():
     return sorted(snapshots, key=lambda item: item["updated_at"], reverse=True)
 
 
-def restore_records_from_snapshot(snapshot_name):
+def restore_records_from_snapshot(snapshot_name, user_id=None):
     snapshot_path = os.path.abspath(os.path.join(TEMP_FOLDER, snapshot_name))
     temp_root = os.path.abspath(TEMP_FOLDER)
     if not snapshot_path.startswith(temp_root + os.sep) or not os.path.exists(snapshot_path):
@@ -424,13 +490,13 @@ def restore_records_from_snapshot(snapshot_name):
         except ValueError:
             file_id = None
 
-    target_file = get_any_file_by_id(file_id) if file_id else None
+    target_file = get_any_file_by_id(file_id, user_id=user_id) if file_id else None
     if target_file:
         replace_records(file_id, rows)
-        restore_uploaded_file(file_id)
+        restore_uploaded_file(file_id, user_id=user_id)
         restored_file_id = file_id
     else:
-        restored_file_id = save_uploaded_file(f"Recovered backup {snapshot_name}", f"recovered_{snapshot_name}")
+        restored_file_id = save_uploaded_file(f"Recovered backup {snapshot_name}", f"recovered_{snapshot_name}", user_id=user_id)
         save_records(restored_file_id, rows)
         write_temp_snapshot(restored_file_id, rows)
 
@@ -438,31 +504,48 @@ def restore_records_from_snapshot(snapshot_name):
     return restored_file_id
 
 
-def get_uploaded_files():
+def get_uploaded_files(user_id=None):
+    clause, params = _owner_clause(user_id)
     conn = _connect()
-    files = conn.execute("SELECT * FROM uploaded_files WHERE status = 'active' ORDER BY tab_order ASC, id ASC").fetchall()
+    files = conn.execute(
+        f"SELECT * FROM uploaded_files WHERE status = 'active' AND {clause} ORDER BY tab_order ASC, id ASC",
+        params,
+    ).fetchall()
     conn.close()
     return [dict(file) for file in files]
 
 
-def get_file_by_id(file_id):
+def get_file_by_id(file_id, user_id=None):
+    clause, params = _owner_clause(user_id)
     conn = _connect()
-    file_row = conn.execute("SELECT * FROM uploaded_files WHERE id = ? AND status = 'active'", (file_id,)).fetchone()
+    file_row = conn.execute(
+        f"SELECT * FROM uploaded_files WHERE id = ? AND status = 'active' AND {clause}",
+        [file_id, *params],
+    ).fetchone()
     conn.close()
     return dict(file_row) if file_row else None
 
 
-def get_any_file_by_id(file_id):
+def get_any_file_by_id(file_id, user_id=None, ignore_owner=False):
     conn = _connect()
-    file_row = conn.execute("SELECT * FROM uploaded_files WHERE id = ?", (file_id,)).fetchone()
+    if ignore_owner:
+        file_row = conn.execute("SELECT * FROM uploaded_files WHERE id = ?", (file_id,)).fetchone()
+    else:
+        clause, params = _owner_clause(user_id)
+        file_row = conn.execute(
+            f"SELECT * FROM uploaded_files WHERE id = ? AND {clause}",
+            [file_id, *params],
+        ).fetchone()
     conn.close()
     return dict(file_row) if file_row else None
 
 
-def get_deleted_files():
+def get_deleted_files(user_id=None):
+    clause, params = _owner_clause(user_id)
     conn = _connect()
     files = conn.execute(
-        "SELECT * FROM uploaded_files WHERE status = 'trashed' ORDER BY deleted_at DESC, id DESC"
+        f"SELECT * FROM uploaded_files WHERE status = 'trashed' AND {clause} ORDER BY deleted_at DESC, id DESC",
+        params,
     ).fetchall()
     conn.close()
     return [dict(file) for file in files]
@@ -475,19 +558,26 @@ def get_audit_logs(limit=200):
     return [dict(log) for log in logs]
 
 
-def delete_uploaded_file(file_id):
+def delete_uploaded_file(file_id, user_id=None):
+    clause, params = _owner_clause(user_id)
     conn = _connect()
-    file_row = conn.execute("SELECT original_name FROM uploaded_files WHERE id = ?", (file_id,)).fetchone()
+    file_row = conn.execute(
+        f"SELECT original_name FROM uploaded_files WHERE id = ? AND {clause}",
+        [file_id, *params],
+    ).fetchone()
     if not file_row:
         conn.close()
-        return
+        return False
     conn.execute(
         "UPDATE uploaded_files SET status = 'trashed', deleted_at = ? WHERE id = ?",
         (datetime.utcnow().isoformat(), file_id),
     )
     
-    # Enforce Max 10 trashed files
-    trashed = conn.execute("SELECT id FROM uploaded_files WHERE status = 'trashed' ORDER BY deleted_at ASC").fetchall()
+    # Enforce Max 10 trashed files (per owner)
+    trashed = conn.execute(
+        f"SELECT id FROM uploaded_files WHERE status = 'trashed' AND {clause} ORDER BY deleted_at ASC",
+        params,
+    ).fetchall()
     if len(trashed) > 10:
         for idx in range(len(trashed) - 10):
             oldest_id = trashed[idx]["id"]
@@ -498,11 +588,16 @@ def delete_uploaded_file(file_id):
     conn.close()
     write_temp_snapshot_from_db(file_id)
     log_action("trash_file", "file", file_id, f"Moved workbook {file_row['original_name']} to trash.")
+    return True
 
 
-def restore_uploaded_file(file_id):
+def restore_uploaded_file(file_id, user_id=None):
+    clause, params = _owner_clause(user_id)
     conn = _connect()
-    file_row = conn.execute("SELECT original_name FROM uploaded_files WHERE id = ?", (file_id,)).fetchone()
+    file_row = conn.execute(
+        f"SELECT original_name FROM uploaded_files WHERE id = ? AND {clause}",
+        [file_id, *params],
+    ).fetchone()
     if not file_row:
         conn.close()
         return False
@@ -513,17 +608,23 @@ def restore_uploaded_file(file_id):
     return True
 
 
-def update_uploaded_file_order(file_ids):
+def update_uploaded_file_order(file_ids, user_id=None):
     ids = [int(file_id) for file_id in file_ids if str(file_id).isdigit()]
     if not ids:
         return 0
 
+    clause, params = _owner_clause(user_id)
     conn = _connect()
+    updated = 0
     for index, file_id in enumerate(ids):
-        conn.execute("UPDATE uploaded_files SET tab_order = ? WHERE id = ?", (index, file_id))
+        cursor = conn.execute(
+            f"UPDATE uploaded_files SET tab_order = ? WHERE id = ? AND {clause}",
+            [index, file_id, *params],
+        )
+        updated += cursor.rowcount
     conn.commit()
     conn.close()
-    return len(ids)
+    return updated
 
 
 def get_records(file_id, query=None, field=None, designation=None, remarks=None, tag_number=None):
@@ -958,6 +1059,238 @@ def delete_user(user_id):
     conn.commit()
     conn.close()
 
+def update_user_profile(user_id, username=None, password_hash=None, profile_picture=None):
+    """Partially updates a user's own profile fields. Only provided
+    (non-None) fields are updated."""
+    fields = []
+    params = []
+    if username is not None:
+        fields.append("username = ?")
+        params.append(username)
+    if password_hash is not None:
+        fields.append("password_hash = ?")
+        params.append(password_hash)
+    if profile_picture is not None:
+        fields.append("profile_picture = ?")
+        params.append(profile_picture)
+
+    if not fields:
+        return False
+
+    params.append(user_id)
+    conn = _connect()
+    conn.execute(f"UPDATE users SET {', '.join(fields)} WHERE id = ?", params)
+    conn.commit()
+    conn.close()
+    return True
+
+def delete_active_device(device_id):
+    """Removes a device/session entry from the Status Activity heartbeat file.
+    Used by admins to clear a stale device or logged-in user session from the panel."""
+    if not device_id:
+        return False
+
+    heartbeat_path = os.path.join(TEMP_FOLDER, "devices.json")
+    if not os.path.exists(heartbeat_path):
+        return False
+
+    try:
+        with open(heartbeat_path, "r", encoding="utf-8") as f:
+            devices = json.load(f)
+    except Exception:
+        return False
+
+    if device_id not in devices:
+        return False
+
+    del devices[device_id]
+    with open(heartbeat_path, "w", encoding="utf-8") as f:
+        json.dump(devices, f)
+    return True
+
 def is_login_enabled():
     val = get_setting("login_enabled", "1")
     return val == "1"
+
+
+# ---------------------------------------------------------------------------
+# Notifications
+# ---------------------------------------------------------------------------
+
+def create_notification(user_id, title, message="", category="general", link=None):
+    conn = _connect()
+    cursor = conn.execute(
+        """
+        INSERT INTO notifications (user_id, title, message, category, link, is_read, created_at)
+        VALUES (?, ?, ?, ?, ?, 0, ?)
+        """,
+        (user_id, title, message, category, link, datetime.utcnow().isoformat()),
+    )
+    conn.commit()
+    notif_id = cursor.lastrowid
+    conn.close()
+    return notif_id
+
+
+def get_notifications(user_id, limit=50, unread_only=False):
+    conn = _connect()
+    query = "SELECT * FROM notifications WHERE user_id = ?"
+    params = [user_id]
+    if unread_only:
+        query += " AND is_read = 0"
+    query += " ORDER BY created_at DESC, id DESC LIMIT ?"
+    params.append(limit)
+    rows = conn.execute(query, params).fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+
+def get_unread_notification_count(user_id):
+    conn = _connect()
+    row = conn.execute(
+        "SELECT COUNT(*) AS c FROM notifications WHERE user_id = ? AND is_read = 0",
+        (user_id,),
+    ).fetchone()
+    conn.close()
+    return row["c"] if row else 0
+
+
+def mark_notification_read(notification_id, user_id):
+    conn = _connect()
+    cursor = conn.execute(
+        "UPDATE notifications SET is_read = 1, read_at = ? WHERE id = ? AND user_id = ? AND is_read = 0",
+        (datetime.utcnow().isoformat(), notification_id, user_id),
+    )
+    conn.commit()
+    updated = cursor.rowcount
+    conn.close()
+    return updated > 0
+
+
+def mark_all_notifications_read(user_id):
+    conn = _connect()
+    cursor = conn.execute(
+        "UPDATE notifications SET is_read = 1, read_at = ? WHERE user_id = ? AND is_read = 0",
+        (datetime.utcnow().isoformat(), user_id),
+    )
+    conn.commit()
+    updated = cursor.rowcount
+    conn.close()
+    return updated
+
+
+def delete_notification(notification_id, user_id):
+    conn = _connect()
+    cursor = conn.execute(
+        "DELETE FROM notifications WHERE id = ? AND user_id = ?",
+        (notification_id, user_id),
+    )
+    conn.commit()
+    deleted = cursor.rowcount
+    conn.close()
+    return deleted > 0
+
+
+# ---------------------------------------------------------------------------
+# Two-Factor Authentication (TOTP)
+# ---------------------------------------------------------------------------
+
+def get_2fa_record(user_id):
+    conn = _connect()
+    row = conn.execute("SELECT * FROM user_2fa WHERE user_id = ?", (user_id,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def is_2fa_enabled(user_id):
+    record = get_2fa_record(user_id)
+    return bool(record and record["enabled"])
+
+
+def start_2fa_setup(user_id, secret, backup_codes):
+    """Creates or replaces a pending (unconfirmed) 2FA secret for the user."""
+    conn = _connect()
+    conn.execute(
+        """
+        INSERT INTO user_2fa (user_id, secret, enabled, backup_codes, created_at, confirmed_at)
+        VALUES (?, ?, 0, ?, ?, NULL)
+        ON CONFLICT(user_id) DO UPDATE SET
+            secret = excluded.secret,
+            enabled = 0,
+            backup_codes = excluded.backup_codes,
+            created_at = excluded.created_at,
+            confirmed_at = NULL
+        """,
+        (user_id, secret, json.dumps(backup_codes), datetime.utcnow().isoformat()),
+    )
+    conn.commit()
+    conn.close()
+
+
+def confirm_2fa(user_id):
+    conn = _connect()
+    cursor = conn.execute(
+        "UPDATE user_2fa SET enabled = 1, confirmed_at = ? WHERE user_id = ?",
+        (datetime.utcnow().isoformat(), user_id),
+    )
+    conn.commit()
+    updated = cursor.rowcount
+    conn.close()
+    return updated > 0
+
+
+def disable_2fa(user_id):
+    conn = _connect()
+    conn.execute("DELETE FROM user_2fa WHERE user_id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+
+
+def consume_backup_code(user_id, code):
+    """Checks a backup code and removes it if valid (single-use). Returns True if matched."""
+    record = get_2fa_record(user_id)
+    if not record or not record.get("backup_codes"):
+        return False
+    codes = json.loads(record["backup_codes"])
+    normalized = code.strip().replace(" ", "").upper()
+    if normalized in codes:
+        codes.remove(normalized)
+        conn = _connect()
+        conn.execute(
+            "UPDATE user_2fa SET backup_codes = ? WHERE user_id = ?",
+            (json.dumps(codes), user_id),
+        )
+        conn.commit()
+        conn.close()
+        return True
+    return False
+
+
+# ---------------------------------------------------------------------------
+# Login History
+# ---------------------------------------------------------------------------
+
+def record_login_attempt(username, status, reason=None, user_id=None, ip_address=None,
+                          user_agent=None, device_id=None, device_name=None):
+    conn = _connect()
+    conn.execute(
+        """
+        INSERT INTO login_history
+            (user_id, username, status, reason, ip_address, user_agent, device_id, device_name, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (user_id, username, status, reason, ip_address, user_agent, device_id, device_name,
+         datetime.utcnow().isoformat()),
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_login_history(user_id, limit=50):
+    conn = _connect()
+    rows = conn.execute(
+        "SELECT * FROM login_history WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT ?",
+        (user_id, limit),
+    ).fetchall()
+    conn.close()
+    return [dict(row) for row in rows]

@@ -276,8 +276,33 @@ function refreshDeviceList() {
         .catch(function () {});
 }
 
+function deleteActiveDevice(deviceId, deviceLabel) {
+    var confirmMsg = 'Remove "' + (deviceLabel || deviceId) + '" from Status Activity?';
+    if (!window.confirm(confirmMsg)) {
+        return;
+    }
+    fetch('/admin/devices/' + encodeURIComponent(deviceId) + '/delete', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'fetch' }
+    })
+        .then(function (response) { return response.json(); })
+        .then(function (result) {
+            if (result && result.success) {
+                refreshDeviceList();
+            } else {
+                window.alert('Failed to remove this entry.');
+            }
+        })
+        .catch(function () {
+            window.alert('Failed to remove this entry.');
+        });
+}
+
 function renderDeviceList(list, devices) {
     list.innerHTML = '';
+    var panel = document.getElementById('devicePanel');
+    var isAdmin = !!(panel && panel.dataset.isAdmin === 'true');
+
     var onlineCount = devices.filter(function (device) {
         return device.online;
     }).length;
@@ -304,12 +329,26 @@ function renderDeviceList(list, devices) {
         var copy = document.createElement('div');
         var name = document.createElement('strong');
         name.textContent = device.device_name || 'Unknown Device';
-        
+
         copy.appendChild(name);
 
-        item.style.gridTemplateColumns = '10px 1fr';
+        item.style.gridTemplateColumns = isAdmin ? '10px 1fr auto' : '10px 1fr';
         item.appendChild(dot);
         item.appendChild(copy);
+
+        if (isAdmin) {
+            var deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'device-delete-btn';
+            deleteBtn.setAttribute('aria-label', 'Remove device');
+            deleteBtn.innerHTML = '<i class="fa-solid fa-trash" aria-hidden="true"></i>';
+            deleteBtn.addEventListener('click', function (event) {
+                event.stopPropagation();
+                deleteActiveDevice(device.device_id, device.device_name);
+            });
+            item.appendChild(deleteBtn);
+        }
+
         list.appendChild(item);
     });
 }
@@ -966,7 +1005,14 @@ var translations = {
         confirmDelete: 'Are you sure you want to delete this user?',
         loginSystem: 'Login System',
         registrationSystem: 'Registration System',
-        allowedDomains: 'Allowed Email Domains (comma separated)'
+        allowedDomains: 'Allowed Email Domains (comma separated)',
+        myProfile: 'My Profile',
+        profilePicture: 'Profile Picture',
+        uploadPicture: 'Upload Picture',
+        removePicture: 'Remove',
+        accountDetails: 'Account Details',
+        confirmNewPassword: 'Confirm New Password',
+        currentPassword: 'Current Password'
     },
     id: {
         auditLog: 'Log Audit',
@@ -1073,7 +1119,14 @@ var translations = {
         confirmDelete: 'Apakah Anda yakin ingin menghapus pengguna ini?',
         loginSystem: 'Sistem Login',
         registrationSystem: 'Sistem Registrasi',
-        allowedDomains: 'Domain Email yang Diizinkan (pisahkan dengan koma)'
+        allowedDomains: 'Domain Email yang Diizinkan (pisahkan dengan koma)',
+        myProfile: 'Profil Saya',
+        profilePicture: 'Foto Profil',
+        uploadPicture: 'Unggah Foto',
+        removePicture: 'Hapus',
+        accountDetails: 'Detail Akun',
+        confirmNewPassword: 'Konfirmasi Kata Sandi Baru',
+        currentPassword: 'Kata Sandi Saat Ini'
     }
 };
 

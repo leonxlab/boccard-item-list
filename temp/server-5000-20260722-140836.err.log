@@ -1,0 +1,580 @@
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.143:5000
+Press CTRL+C to quit
+127.0.0.1 - - [22/Jul/2026 14:08:40] "GET /profile HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:08:41] "GET /static/css/style.css?v=15 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:08:41] "GET /notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:08:41] "GET /static/images/logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:08:41] "GET /static/images/white-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:08:41] "GET /static/js/app.js?v=16 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:08:41] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:08:41] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:08:41] "GET /favicon.ico?v=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:08:42] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:08:42] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:08:45] "POST /profile HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:08:45] "GET /profile HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:08:45] "GET /static/profile_pics/user_3_1784678925.png HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:08:50] "GET /notifications HTTP/1.1" 200 -
+[2026-07-22 14:08:51,656] ERROR in app: Exception on /notifications/mark-all-read [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 839, in notifications_mark_all_read_route
+    updated_count = mark_all_notifications_read(current_user.id)
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 1172, in mark_all_notifications_read
+    cursor = conn.execute(
+        "UPDATE notifications SET is_read = 1, read_at = ? WHERE user_id = ? AND is_read = 0",
+        (datetime.utcnow().isoformat(), user_id),
+    )
+sqlite3.OperationalError: no such column: read_at
+127.0.0.1 - - [22/Jul/2026 14:08:51] "POST /notifications/mark-all-read HTTP/1.1" 500 -
+127.0.0.1 - - [22/Jul/2026 14:08:58] "GET /profile/login-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:08:58] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:08:59] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:09:00] "GET /profile HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:09:00] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:09:01] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:09:01] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:09:01] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:09:01] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:09:01] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:09:02] "POST /profile HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:09:02] "GET /profile HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:09:05] "POST /profile HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:09:05] "GET /profile HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:09:11] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:09:11] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:09:22] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:09:22] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:09:22] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:09:22] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:09:30] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:09:31] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:09:31] "GET /notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:09:31] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:09:31] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+[2026-07-22 14:09:32,240] ERROR in app: Exception on /notifications/mark-all-read [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 839, in notifications_mark_all_read_route
+    updated_count = mark_all_notifications_read(current_user.id)
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 1172, in mark_all_notifications_read
+    cursor = conn.execute(
+        "UPDATE notifications SET is_read = 1, read_at = ? WHERE user_id = ? AND is_read = 0",
+        (datetime.utcnow().isoformat(), user_id),
+    )
+sqlite3.OperationalError: no such column: read_at
+127.0.0.1 - - [22/Jul/2026 14:09:32] "POST /notifications/mark-all-read HTTP/1.1" 500 -
+[2026-07-22 14:09:35,512] ERROR in app: Exception on /notifications/mark-all-read [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+    return current_app.ensure_sync(func)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 839, in notifications_mark_all_read_route
+    updated_count = mark_all_notifications_read(current_user.id)
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 1172, in mark_all_notifications_read
+    cursor = conn.execute(
+        "UPDATE notifications SET is_read = 1, read_at = ? WHERE user_id = ? AND is_read = 0",
+        (datetime.utcnow().isoformat(), user_id),
+    )
+sqlite3.OperationalError: no such column: read_at
+127.0.0.1 - - [22/Jul/2026 14:09:35] "POST /notifications/mark-all-read HTTP/1.1" 500 -
+127.0.0.1 - - [22/Jul/2026 14:09:42] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:09:42] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:09:47] "GET /profile/login-history HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:09:47] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:09:47] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:09:48] "GET /profile HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:09:49] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:09:49] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:10:00] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:10:01] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:10:01] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:10:01] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:10:12] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:10:12] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:10:18] "GET /settings HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:10:19] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:10:19] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:10:20] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:10:21] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:10:21] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+192.168.1.49 - - [22/Jul/2026 14:10:23] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:10:23] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:10:23] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:10:23] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:10:30] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:10:31] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:10:31] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:10:31] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:10:41] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:10:41] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:11:00] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:11:01] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:11:01] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:11:01] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:11:11] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:11:11] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:11:24] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:11:24] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:11:24] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:11:24] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:11:30] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:11:31] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:11:31] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:11:31] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:11:41] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:11:41] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:12:00] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:12:01] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:12:01] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:12:01] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:12:11] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:12:11] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:12:25] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:12:25] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:12:25] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:12:25] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:12:30] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:12:31] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:12:31] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:12:31] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:12:41] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:12:41] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:13:00] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:13:01] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:13:01] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:13:01] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:13:11] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:13:11] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:13:26] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:13:26] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:13:26] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:13:26] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:13:30] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:13:31] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:13:31] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:13:31] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:13:41] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:13:41] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:14:00] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:14:01] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:14:01] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:14:01] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:14:11] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:14:11] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:14:27] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:14:27] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:14:27] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:14:27] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:14:30] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:14:31] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:14:31] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:14:31] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:14:41] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:14:41] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:15:00] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:15:01] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:15:01] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:15:01] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:15:11] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:15:11] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:15:28] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:15:28] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:15:28] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:15:28] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:15:30] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:15:31] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:15:31] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:15:31] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:15:41] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:15:41] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:00] "POST /devices/heartbeat HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:16:01] "GET /login?next=http://localhost:5000/devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:01] "GET /devices HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:16:01] "GET /login?next=http://localhost:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:11] "GET /audit-log HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:16:11] "GET /login?next=http://localhost:5000/audit-log HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:11] "GET /static/css/style.css?v=15 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:11] "GET /static/images/logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:12] "GET /favicon.ico?v=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:12] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:12] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:16:12] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:16:12] "GET /devices HTTP/1.1" 200 -
+[2026-07-22 14:16:17,734] ERROR in app: Exception on /login [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 552, in login
+    record_login_attempt(username, "success", user_id=user["id"], ip_address=_client_ip(),
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          user_agent=request.headers.get("User-Agent"),
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          device_id=g.device_id, device_name=g.device_name)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 1276, in record_login_attempt
+    conn.execute(
+    ~~~~~~~~~~~~^
+        """
+        ^^^
+    ...<5 lines>...
+         datetime.utcnow().isoformat()),
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+sqlite3.OperationalError: table login_history has no column named reason
+127.0.0.1 - - [22/Jul/2026 14:16:17] "POST /login HTTP/1.1" 500 -
+127.0.0.1 - - [22/Jul/2026 14:16:19] "GET /login HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:20] "GET /static/css/style.css?v=15 HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:16:20] "GET /static/images/logo.png HTTP/1.1" 304 -
+127.0.0.1 - - [22/Jul/2026 14:16:20] "GET /favicon.ico?v=7 HTTP/1.1" 304 -
+[2026-07-22 14:16:26,674] ERROR in app: Exception on /login [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 552, in login
+    record_login_attempt(username, "success", user_id=user["id"], ip_address=_client_ip(),
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          user_agent=request.headers.get("User-Agent"),
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          device_id=g.device_id, device_name=g.device_name)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 1276, in record_login_attempt
+    conn.execute(
+    ~~~~~~~~~~~~^
+        """
+        ^^^
+    ...<5 lines>...
+         datetime.utcnow().isoformat()),
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+sqlite3.OperationalError: table login_history has no column named reason
+127.0.0.1 - - [22/Jul/2026 14:16:26] "POST /login HTTP/1.1" 500 -
+[2026-07-22 14:16:28,401] ERROR in app: Exception on /login [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 552, in login
+    record_login_attempt(username, "success", user_id=user["id"], ip_address=_client_ip(),
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          user_agent=request.headers.get("User-Agent"),
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          device_id=g.device_id, device_name=g.device_name)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 1276, in record_login_attempt
+    conn.execute(
+    ~~~~~~~~~~~~^
+        """
+        ^^^
+    ...<5 lines>...
+         datetime.utcnow().isoformat()),
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+sqlite3.OperationalError: table login_history has no column named reason
+127.0.0.1 - - [22/Jul/2026 14:16:28] "POST /login HTTP/1.1" 500 -
+127.0.0.1 - - [22/Jul/2026 14:16:28] "GET /favicon.ico HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:16:29] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:16:29] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:16:29] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:16:29] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+[2026-07-22 14:16:30,126] ERROR in app: Exception on /login [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 552, in login
+    record_login_attempt(username, "success", user_id=user["id"], ip_address=_client_ip(),
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          user_agent=request.headers.get("User-Agent"),
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          device_id=g.device_id, device_name=g.device_name)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 1276, in record_login_attempt
+    conn.execute(
+    ~~~~~~~~~~~~^
+        """
+        ^^^
+    ...<5 lines>...
+         datetime.utcnow().isoformat()),
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+sqlite3.OperationalError: table login_history has no column named reason
+127.0.0.1 - - [22/Jul/2026 14:16:30] "POST /login HTTP/1.1" 500 -
+127.0.0.1 - - [22/Jul/2026 14:16:30] "GET /favicon.ico HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:34] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+[2026-07-22 14:16:36,146] ERROR in app: Exception on /login [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 552, in login
+    record_login_attempt(username, "success", user_id=user["id"], ip_address=_client_ip(),
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          user_agent=request.headers.get("User-Agent"),
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          device_id=g.device_id, device_name=g.device_name)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 1276, in record_login_attempt
+    conn.execute(
+    ~~~~~~~~~~~~^
+        """
+        ^^^
+    ...<5 lines>...
+         datetime.utcnow().isoformat()),
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+sqlite3.OperationalError: table login_history has no column named reason
+127.0.0.1 - - [22/Jul/2026 14:16:36] "POST /login HTTP/1.1" 500 -
+127.0.0.1 - - [22/Jul/2026 14:16:36] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Jul/2026 14:16:36] "GET /favicon.ico HTTP/1.1" 200 -
+[2026-07-22 14:16:37,542] ERROR in app: Exception on /login [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 552, in login
+    record_login_attempt(username, "success", user_id=user["id"], ip_address=_client_ip(),
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          user_agent=request.headers.get("User-Agent"),
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          device_id=g.device_id, device_name=g.device_name)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 1276, in record_login_attempt
+    conn.execute(
+    ~~~~~~~~~~~~^
+        """
+        ^^^
+    ...<5 lines>...
+         datetime.utcnow().isoformat()),
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+sqlite3.OperationalError: table login_history has no column named reason
+127.0.0.1 - - [22/Jul/2026 14:16:37] "POST /login HTTP/1.1" 500 -
+127.0.0.1 - - [22/Jul/2026 14:16:37] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+[2026-07-22 14:16:38,437] ERROR in app: Exception on /login [POST]
+Traceback (most recent call last):
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "C:\Users\manur\AppData\Local\Programs\Python\Python313\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\routes.py", line 552, in login
+    record_login_attempt(username, "success", user_id=user["id"], ip_address=_client_ip(),
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          user_agent=request.headers.get("User-Agent"),
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                          device_id=g.device_id, device_name=g.device_name)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\manur\OneDrive\Documents\item-list-revision\app\services\db_service.py", line 1276, in record_login_attempt
+    conn.execute(
+    ~~~~~~~~~~~~^
+        """
+        ^^^
+    ...<5 lines>...
+         datetime.utcnow().isoformat()),
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+sqlite3.OperationalError: table login_history has no column named reason
+127.0.0.1 - - [22/Jul/2026 14:16:38] "POST /login HTTP/1.1" 500 -
+127.0.0.1 - - [22/Jul/2026 14:16:38] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Jul/2026 14:16:39] "GET /favicon.ico HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:42] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:42] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:43] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:43] "GET /static/css/style.css?v=15 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:43] "GET /static/images/white-logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:43] "GET /static/images/logo.png HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:43] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 -
+127.0.0.1 - - [22/Jul/2026 14:16:44] "GET /static/js/app.js?v=16 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:44] "GET /notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:45] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:45] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:46] "GET /favicon.ico?v=7 HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:46] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:16:50] "GET /admin HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:17:01] "GET /profile HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:17:06] "POST /profile HTTP/1.1" 302 -
+127.0.0.1 - - [22/Jul/2026 14:17:06] "GET /profile HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:17:06] "GET /static/profile_pics/user_1_1784679426.png HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:17:09] "GET /notifications HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:17:15] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:17:15] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:17:15] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:17:16] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:17:30] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:17:30] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:17:30] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:17:30] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:17:42] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:17:42] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:17:46] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:17:46] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:18:12] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:18:12] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:18:15] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:18:16] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:18:31] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:18:31] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:18:31] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:18:31] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:18:42] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:18:42] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:18:46] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:18:46] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:19:16] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:19:16] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:19:32] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:19:32] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:19:32] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:19:32] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:19:43] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:19:43] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:19:46] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:19:46] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:20:32] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:20:32] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:20:32] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:20:32] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:20:44] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:20:44] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:21:05] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:21:05] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:21:32] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:21:32] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:21:32] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:21:32] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:21:45] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:21:45] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:22:05] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:22:05] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:22:32] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:22:32] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:22:32] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:22:32] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:22:46] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:22:46] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:22:55] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:22:55] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:22:55] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:22:56] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:23:05] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:23:05] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:23:15] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:23:15] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:23:15] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:23:15] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:23:45] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:23:45] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:23:45] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:23:45] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:23:47] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:23:47] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:24:05] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:24:05] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:24:15] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:24:15] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:24:15] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:24:15] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:24:45] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:24:45] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:24:45] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:24:45] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:24:48] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:24:48] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:25:05] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:25:05] "GET /devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:25:15] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:25:15] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:25:15] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:25:15] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:25:45] "POST /devices/heartbeat HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:25:45] "GET /login?next=http://192.168.1.143:5000/devices/heartbeat HTTP/1.1" 200 -
+192.168.1.49 - - [22/Jul/2026 14:25:45] "GET /devices HTTP/1.1" 302 -
+192.168.1.49 - - [22/Jul/2026 14:25:45] "GET /login?next=http://192.168.1.143:5000/devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:25:49] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:25:49] "GET /devices HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:26:02] "POST /devices/heartbeat HTTP/1.1" 200 -
+127.0.0.1 - - [22/Jul/2026 14:26:02] "GET /devices HTTP/1.1" 200 -

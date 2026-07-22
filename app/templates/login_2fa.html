@@ -1,0 +1,24 @@
+{% extends "auth_base.html" %}
+{% block content %}
+<div class="auth-container">
+    <h2 style="text-align: center; margin-bottom: 8px; color: #333;">Two-Factor Verification</h2>
+    <p style="text-align: center; color: #777; margin-bottom: 20px; font-size: 14px;">
+        Signed in as <strong>{{ username }}</strong>. Enter the 6-digit code from your authenticator app.
+    </p>
+    <form method="post" action="{{ url_for('login_2fa', next=request.args.get('next')) }}">
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; color: #555;">Authentication Code</label>
+            <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" required autofocus
+                   placeholder="123456"
+                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; letter-spacing: 4px; font-size: 18px; text-align: center;">
+            <p class="muted" style="margin-top: 8px; font-size: 12.5px;">
+                You can also use one of your 8-character backup codes.
+            </p>
+        </div>
+        <button type="submit" class="primary-btn" style="width: 100%; padding: 12px; font-size: 16px;">Verify</button>
+        <div style="text-align: center; margin-top: 15px;">
+            <a href="{{ url_for('login') }}" style="color: #0056b3; text-decoration: none;">Back to login</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

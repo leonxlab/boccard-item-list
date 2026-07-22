@@ -113,6 +113,23 @@
             </form>
 
             <div class="topbar-actions">
+                {% if login_enabled and current_user.is_authenticated %}
+                <div id="notifBell" style="position: relative;">
+                    <button id="notifBellBtn" type="button" aria-label="Notifications" style="position: relative; background: none; border: none; cursor: pointer; padding: 8px; font-size: 16px; color: inherit;">
+                        <i class="fa-solid fa-bell" aria-hidden="true"></i>
+                        <span id="notifBadge" class="badge" style="display:none; position:absolute; top:2px; right:2px; background:#dc3545; color:#fff; border-radius:999px; min-width:16px; height:16px; font-size:10px; line-height:16px; text-align:center; padding:0 4px;"></span>
+                    </button>
+                    <div id="notifDropdown" style="display:none; position:absolute; right:0; top: 100%; margin-top: 6px; width: 340px; max-height: 420px; overflow-y: auto; background:#fff; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:1000;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid #eee;">
+                            <strong style="font-size:13px;">Notifications</strong>
+                            <button id="notifMarkAllRead" type="button" style="font-size:12px; padding:4px 10px; border:1px solid #e2e8f0; border-radius:6px; background:#f8fafc; color:#374151; cursor:pointer; font-weight:600; line-height:1.4; display:inline-flex; align-items:center; gap:5px; transition:background .15s;">Mark all read</button>
+                        </div>
+                        <div id="notifList" style="padding: 6px 0;">
+                            <p style="padding:16px; color:#999; font-size:13px; text-align:center;">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
                 <button id="languageToggle" class="language-toggle" type="button" aria-label="Switch language" data-i18n-aria-label="switchLanguage">
                     <i class="fa-solid fa-globe" aria-hidden="true"></i>
                     <span data-language-label>ID</span>
@@ -154,6 +171,14 @@
                         <a href="{{ url_for('audit_log_route') }}" class="side-link {% if active_tab == 'audit' %}active{% endif %}"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span data-i18n="auditLog">Audit Log</span></a>
                         <a href="{{ url_for('trash_route') }}" class="side-link {% if active_tab == 'trash' %}active{% endif %}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i><span data-i18n="trash">Trash</span></a>
                         {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('profile') }}" class="side-link {% if active_tab == 'profile' %}active{% endif %}">
+                                {% if current_user.profile_picture %}
+                                    <img src="{{ url_for('static', filename='profile_pics/' + current_user.profile_picture) }}" alt="" style="width:18px;height:18px;border-radius:50%;object-fit:cover;">
+                                {% else %}
+                                    <i class="fa-solid fa-user" aria-hidden="true"></i>
+                                {% endif %}
+                                <span data-i18n="myProfile">My Profile</span>
+                            </a>
                             {% if current_user.role == 'admin' %}
                             <a href="{{ url_for('admin') }}" class="side-link {% if active_tab == 'admin' %}active{% endif %}"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span data-i18n="adminPanel">Admin Panel</span></a>
                             {% endif %}
@@ -206,11 +231,14 @@
                 </nav>
 
                 <section class="content-scroll">
-                    {% with messages = get_flashed_messages() %}
+                    {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
                             <div class="flash-list">
-                                {% for message in messages %}
-                                    <div class="flash">{{ message }}</div>
+                                {% for category, message in messages %}
+                                    <div class="flash flash-{{ category }}">
+                                        {% if category == 'success' %}<i class="fa-solid fa-circle-check" style="margin-right:7px;"></i>{% elif category == 'danger' %}<i class="fa-solid fa-circle-xmark" style="margin-right:7px;"></i>{% else %}<i class="fa-solid fa-circle-info" style="margin-right:7px;"></i>{% endif %}
+                                        {{ message }}
+                                    </div>
                                 {% endfor %}
                             </div>
                         {% endif %}
@@ -220,7 +248,7 @@
 
                     <footer class="app-footer" style="text-align: center; padding: 40px 20px 20px; font-size: 14px; color: #888;">
                         <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Boccard Logo" style="height: 32px; margin: 15px 0; opacity: 0.7;">
-                        <div>&copy; 2026 Boccard Indonesia</div>
+                        <div>&copy; 2026 PT BOCCARD INDONESIA. Hak Cipta Dilindungi</div>
                     </footer>
                 </section>
             </main>
@@ -268,7 +296,7 @@
         </form>
     </dialog>
 
-    <div id="devicePanel" class="device-panel">
+    <div id="devicePanel" class="device-panel" data-is-admin="{{ 'true' if (current_user.is_authenticated and current_user.role == 'admin') else 'false' }}">
         <div class="device-panel-head">
             <strong>Status Activity</strong>
             <span></span>
@@ -281,6 +309,109 @@
         </div>
     </div>
 
+    {% if login_enabled and current_user.is_authenticated %}
+    <script>
+    (function () {
+        const bellBtn = document.getElementById('notifBellBtn');
+        const dropdown = document.getElementById('notifDropdown');
+        const badge = document.getElementById('notifBadge');
+        const list = document.getElementById('notifList');
+        const markAllBtn = document.getElementById('notifMarkAllRead');
+        if (!bellBtn) return;
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
+        }
+
+        function renderNotifications(notifications) {
+            if (!notifications.length) {
+                list.innerHTML = '<p style="padding:16px; color:#999; font-size:13px; text-align:center;">No notifications yet.</p>';
+                return;
+            }
+            list.innerHTML = notifications.map(function (n) {
+                const unreadStyle = n.is_read ? '' : 'background:#f2f7ff;';
+                return (
+                    '<div class="notif-item" data-id="' + n.id + '" style="padding:10px 14px; border-bottom:1px solid #f2f2f2; cursor:pointer; ' + unreadStyle + '">' +
+                    '<div style="font-size:13px; font-weight:' + (n.is_read ? '500' : '700') + ';">' + escapeHtml(n.title) + '</div>' +
+                    (n.message ? '<div style="font-size:12px; color:#777; margin-top:2px;">' + escapeHtml(n.message) + '</div>' : '') +
+                    '<div style="font-size:11px; color:#aaa; margin-top:4px;">' + escapeHtml((n.created_at || '').replace('T', ' ').slice(0, 19)) + '</div>' +
+                    '</div>'
+                );
+            }).join('');
+
+            list.querySelectorAll('.notif-item').forEach(function (item) {
+                item.addEventListener('click', function () {
+                    const id = item.getAttribute('data-id');
+                    fetch('/notifications/' + id + '/read', { method: 'POST', credentials: 'same-origin' })
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            updateBadge(data.unread_count);
+                            loadNotifications();
+                        })
+                        .catch(function () {});
+                });
+            });
+        }
+
+        function updateBadge(count) {
+            if (count > 0) {
+                badge.style.display = 'inline-block';
+                badge.textContent = count > 99 ? '99+' : String(count);
+            } else {
+                badge.style.display = 'none';
+                badge.textContent = '';
+            }
+        }
+
+        function loadNotifications() {
+            fetch('/notifications')
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (!data.success) return;
+                    renderNotifications(data.notifications);
+                    updateBadge(data.unread_count);
+                })
+                .catch(function () {
+                    list.innerHTML = '<p style="padding:16px; color:#c62828; font-size:13px; text-align:center;">Could not load notifications.</p>';
+                });
+        }
+
+        bellBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const isOpen = dropdown.style.display === 'block';
+            dropdown.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) loadNotifications();
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!dropdown.contains(e.target) && e.target !== bellBtn) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        markAllBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            fetch('/notifications/mark-all-read', { method: 'POST', credentials: 'same-origin' })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    updateBadge(data.unread_count);
+                    loadNotifications();
+                })
+                .catch(function () {});
+        });
+
+        // Initial unread count on page load (without opening the dropdown)
+        fetch('/notifications')
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) updateBadge(data.unread_count);
+            })
+            .catch(function () {});
+    })();
+    </script>
+    {% endif %}
     <script src="{{ url_for('static', filename='js/app.js') }}?v=16"></script>
 </body>
 </html>

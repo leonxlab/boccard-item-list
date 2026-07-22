@@ -32,17 +32,54 @@ from app.services.db_service import (
     update_uploaded_file_order,
     write_temp_snapshot,
 )
-from app.services.excel_service import parse_excel_file
+from app.services.excel_service import export_workbook_from_template, parse_excel_file
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, current_user
 import json
-from app.services.db_service import get_user_by_username, get_all_users, create_user, update_user_status, set_setting
+import base64
+import secrets
+import string
+from io import BytesIO
+import pyotp
+import qrcode
+from app.services.db_service import (
+    get_user_by_username,
+    get_all_users,
+    create_user,
+    update_user_status,
+    set_setting,
+    get_user_by_id,
+    update_user_profile,
+    delete_active_device,
+    create_notification,
+    get_notifications,
+    get_unread_notification_count,
+    mark_notification_read,
+    mark_all_notifications_read,
+    delete_notification,
+    get_2fa_record,
+    is_2fa_enabled,
+    start_2fa_setup,
+    confirm_2fa,
+    disable_2fa,
+    consume_backup_code,
+    record_login_attempt,
+    get_login_history,
+)
 
 
 
 def register_routes(app):
-    
+
+    def current_owner_id():
+        """Returns the current user's id when login is enabled and the user is
+        authenticated. Returns None (the shared/guest bucket) otherwise, so the
+        app keeps working exactly as before when login is disabled."""
+        if getattr(g, "login_enabled", False) and current_user.is_authenticated:
+            return current_user.id
+        return None
+
     @app.before_request
     def set_device_and_auth():
         from app.services.db_service import is_login_enabled, get_setting
@@ -75,14 +112,14 @@ def register_routes(app):
                 return redirect(url_for('maintenance'))
 
         # Protect routes
-        allowed_endpoints = ['login', 'static', 'favicon_route', 'signup', 'maintenance']
+        allowed_endpoints = ['login', 'login_2fa', 'static', 'favicon_route', 'signup', 'maintenance']
         if g.login_enabled and request.endpoint and request.endpoint not in allowed_endpoints:
             if not current_user.is_authenticated:
                 return redirect(url_for('login', next=request.url))
 
     @app.errorhandler(404)
     def not_found_route(error):
-        files = get_uploaded_files()
+        files = get_uploaded_files(current_owner_id())
         selected_file = files[0] if files else None
         return render_template(
             "404.html",
@@ -143,7 +180,8 @@ def register_routes(app):
 
     @app.route("/", methods=["GET", "POST"])
     def index():
-        files = get_uploaded_files()
+        owner_id = current_owner_id()
+        files = get_uploaded_files(owner_id)
         selected_file_id = request.args.get("file_id")
         if not selected_file_id and files:
             selected_file_id = str(files[0]["id"])
@@ -164,10 +202,10 @@ def register_routes(app):
             uploaded_file.save(upload_path)
 
             rows = parse_excel_file(upload_path)
-            for existing_file in get_uploaded_files():
-                delete_uploaded_file(existing_file["id"])
+            for existing_file in get_uploaded_files(owner_id):
+                delete_uploaded_file(existing_file["id"], owner_id)
 
-            file_id = save_uploaded_file(uploaded_file.filename, stored_name)
+            file_id = save_uploaded_file(uploaded_file.filename, stored_name, owner_id)
             save_records(file_id, rows)
             write_temp_snapshot(file_id, rows)
 
@@ -182,7 +220,7 @@ def register_routes(app):
             return redirect(url_for("index"))
 
         if selected_file_id:
-            file_info = get_file_by_id(int(selected_file_id))
+            file_info = get_file_by_id(int(selected_file_id), owner_id)
 
             if file_info:
                 from app.services.db_service import log_action
@@ -282,13 +320,15 @@ def register_routes(app):
 
     @app.route("/file/<int:file_id>/delete", methods=["POST"])
     def delete_file_route(file_id):
-        delete_uploaded_file(file_id)
-        flash("File closed.")
+        if delete_uploaded_file(file_id, current_owner_id()):
+            flash("File closed.")
+        else:
+            flash("File not found.")
         return redirect(url_for("index"))
 
     @app.route("/file/<int:file_id>/restore", methods=["POST"])
     def restore_file_route(file_id):
-        if restore_uploaded_file(file_id):
+        if restore_uploaded_file(file_id, current_owner_id()):
             flash("File restored.")
             return redirect(url_for("index", file_id=file_id))
         flash("File could not be restored.")
@@ -296,7 +336,7 @@ def register_routes(app):
 
     @app.route("/backup/<snapshot_name>/restore", methods=["POST"])
     def restore_backup_route(snapshot_name):
-        restored_file_id = restore_records_from_snapshot(snapshot_name)
+        restored_file_id = restore_records_from_snapshot(snapshot_name, current_owner_id())
         if restored_file_id:
             flash("Backup restored from temp snapshot.")
             return redirect(url_for("index", file_id=restored_file_id))
@@ -306,12 +346,12 @@ def register_routes(app):
     @app.route("/files/reorder", methods=["POST"])
     def reorder_files_route():
         payload = request.get_json(silent=True) or {}
-        updated_count = update_uploaded_file_order(payload.get("file_ids", []))
+        updated_count = update_uploaded_file_order(payload.get("file_ids", []), current_owner_id())
         return jsonify({"updated": updated_count})
 
     @app.route("/file/<int:file_id>/export")
     def export_file_route(file_id):
-        file_info = get_file_by_id(file_id)
+        file_info = get_file_by_id(file_id, current_owner_id())
         if not file_info:
             flash("File not found.")
             return redirect(url_for("index"))
@@ -323,22 +363,28 @@ def register_routes(app):
                 if key not in detail_keys:
                     detail_keys.append(key)
 
-        workbook = Workbook()
-        worksheet = workbook.active
-        worksheet.title = "Item List"
-        worksheet.append(["Remarks in P&ID Database", "Boccard Item Number", "Tag Number", "Designation", *detail_keys])
-        for record in records:
-            worksheet.append([
-                record.get("remarks_in_pid", ""),
-                record.get("boccard_item_number", ""),
-                record.get("tag_number", ""),
-                record.get("designation", ""),
-                *[(record.get("extra_data") or {}).get(key, "") for key in detail_keys],
-            ])
+        source_path = os.path.join(app.config["UPLOAD_FOLDER"], file_info["stored_name"])
+        output = export_workbook_from_template(source_path, records)
 
-        output = BytesIO()
-        workbook.save(output)
-        output.seek(0)
+        if output is None:
+            # Original file is gone / unreadable: fall back to a plain export
+            # so the user still gets their data, just without formatting.
+            flash("Original file template could not be found; exported with basic formatting only.", "warning")
+            workbook = Workbook()
+            worksheet = workbook.active
+            worksheet.title = "Item List"
+            worksheet.append(["Remarks in P&ID Database", "Boccard Item Number", "Tag Number", "Designation", *detail_keys])
+            for record in records:
+                worksheet.append([
+                    record.get("remarks_in_pid", ""),
+                    record.get("boccard_item_number", ""),
+                    record.get("tag_number", ""),
+                    record.get("designation", ""),
+                    *[(record.get("extra_data") or {}).get(key, "") for key in detail_keys],
+                ])
+            output = BytesIO()
+            workbook.save(output)
+            output.seek(0)
 
         filename = os.path.splitext(file_info["original_name"])[0] + ".xlsx"
         return send_file(
@@ -365,9 +411,9 @@ def register_routes(app):
             flash("Record not found.")
             return redirect(url_for("index"))
 
-        files = get_uploaded_files()
+        files = get_uploaded_files(current_owner_id())
 
-        selected_file = get_file_by_id(record["file_id"])
+        selected_file = get_file_by_id(record["file_id"], current_owner_id())
         if request.method == "GET":
             return render_template("edit.html", files=files, record=record, selected_file=selected_file, active_tab='edit')
 
@@ -405,7 +451,7 @@ def register_routes(app):
 
     @app.route("/settings")
     def settings_route():
-        files = get_uploaded_files()
+        files = get_uploaded_files(current_owner_id())
         selected_file = files[0] if files else None
         return render_template(
             "system.html",
@@ -419,7 +465,7 @@ def register_routes(app):
 
     @app.route("/audit-log")
     def audit_log_route():
-        files = get_uploaded_files()
+        files = get_uploaded_files(current_owner_id())
         selected_file = files[0] if files else None
         return render_template(
             "system.html",
@@ -433,7 +479,8 @@ def register_routes(app):
 
     @app.route("/trash")
     def trash_route():
-        files = get_uploaded_files()
+        owner_id = current_owner_id()
+        files = get_uploaded_files(owner_id)
         selected_file = files[0] if files else None
         return render_template(
             "system.html",
@@ -441,7 +488,7 @@ def register_routes(app):
             selected_file=selected_file,
             page_title="Trash",
             page_kind="trash",
-            deleted_files=get_deleted_files(),
+            deleted_files=get_deleted_files(owner_id),
             deleted_records=get_deleted_records(),
             active_tab='trash',
         )
@@ -470,6 +517,12 @@ def register_routes(app):
                 
         return render_template("maintenance.html")
 
+    def _client_ip():
+        forwarded = request.headers.get("X-Forwarded-For", "")
+        if forwarded:
+            return forwarded.split(",")[0].strip()
+        return request.remote_addr or ""
+
     @app.route("/login", methods=["GET", "POST"])
     def login():
         from app.services.db_service import get_setting
@@ -484,16 +537,68 @@ def register_routes(app):
             
             if user and check_password_hash(user["password_hash"], password):
                 if user["status"] != 'active':
+                    record_login_attempt(username, "failed", "Account disabled", user_id=user["id"],
+                                          ip_address=_client_ip(), user_agent=request.headers.get("User-Agent"))
                     flash("Account is disabled.", "danger")
                     return redirect(url_for("login"))
-                    
+
+                if is_2fa_enabled(user["id"]):
+                    # Password verified; stash the pending user id and require the OTP step.
+                    session["pending_2fa_user_id"] = user["id"]
+                    return redirect(url_for("login_2fa", next=request.args.get("next")))
+
                 from app.__init__ import User
                 login_user(User(user))
+                record_login_attempt(username, "success", user_id=user["id"], ip_address=_client_ip(),
+                                      user_agent=request.headers.get("User-Agent"),
+                                      device_id=g.device_id, device_name=g.device_name)
                 return redirect(request.args.get("next") or url_for("index"))
-                
+
+            record_login_attempt(username or "", "failed", "Invalid username or password",
+                                  user_id=(user["id"] if user else None),
+                                  ip_address=_client_ip(), user_agent=request.headers.get("User-Agent"))
             flash("Invalid username or password", "danger")
             
         return render_template("login.html")
+
+    @app.route("/login/2fa", methods=["GET", "POST"])
+    def login_2fa():
+        pending_user_id = session.get("pending_2fa_user_id")
+        if not pending_user_id:
+            return redirect(url_for("login"))
+
+        user = get_user_by_id(pending_user_id)
+        if not user:
+            session.pop("pending_2fa_user_id", None)
+            return redirect(url_for("login"))
+
+        if request.method == "POST":
+            code = (request.form.get("code") or "").strip()
+            record = get_2fa_record(user["id"])
+            valid = False
+
+            if record and record.get("enabled"):
+                totp = pyotp.TOTP(record["secret"])
+                if totp.verify(code.replace(" ", ""), valid_window=1):
+                    valid = True
+                elif consume_backup_code(user["id"], code):
+                    valid = True
+
+            if not valid:
+                record_login_attempt(user["username"], "failed", "Invalid 2FA code", user_id=user["id"],
+                                      ip_address=_client_ip(), user_agent=request.headers.get("User-Agent"))
+                flash("Invalid authentication code. Please try again.", "danger")
+                return redirect(url_for("login_2fa", next=request.args.get("next")))
+
+            session.pop("pending_2fa_user_id", None)
+            from app.__init__ import User
+            login_user(User(user))
+            record_login_attempt(user["username"], "success", "2FA", user_id=user["id"], ip_address=_client_ip(),
+                                  user_agent=request.headers.get("User-Agent"),
+                                  device_id=g.device_id, device_name=g.device_name)
+            return redirect(request.args.get("next") or url_for("index"))
+
+        return render_template("login_2fa.html", username=user["username"])
 
     @app.route("/logout")
     def logout():
@@ -502,6 +607,269 @@ def register_routes(app):
         if get_setting("login_enabled", "1") == "0":
             return redirect(url_for("index"))
         return redirect(url_for("login"))
+
+    @app.route("/profile", methods=["GET", "POST"])
+    @login_required
+    def profile():
+        if not getattr(g, "login_enabled", False):
+            flash("Login system is currently disabled.", "danger")
+            return redirect(url_for("index"))
+
+        user_row = get_user_by_id(current_user.id)
+        if not user_row:
+            flash("User not found.", "danger")
+            return redirect(url_for("index"))
+
+        if request.method == "POST":
+            action = request.form.get("action", "update_profile")
+
+            if action == "update_picture":
+                file = request.files.get("profile_picture")
+                if not file or not file.filename:
+                    flash("Please choose an image to upload.", "danger")
+                    return redirect(url_for("profile"))
+
+                ext = os.path.splitext(file.filename)[1].lower()
+                if ext not in (".png", ".jpg", ".jpeg", ".gif", ".webp"):
+                    flash("Unsupported image format. Use PNG, JPG, GIF, or WEBP.", "danger")
+                    return redirect(url_for("profile"))
+
+                pic_folder = os.path.join(app.root_path, "static", "profile_pics")
+                os.makedirs(pic_folder, exist_ok=True)
+
+                filename = f"user_{current_user.id}_{int(datetime.utcnow().timestamp())}{ext}"
+                file.save(os.path.join(pic_folder, filename))
+
+                old_picture = user_row.get("profile_picture")
+                if old_picture:
+                    old_path = os.path.join(pic_folder, old_picture)
+                    if os.path.exists(old_path):
+                        try:
+                            os.remove(old_path)
+                        except OSError:
+                            pass
+
+                update_user_profile(current_user.id, profile_picture=filename)
+                flash("Profile picture updated.", "success")
+                return redirect(url_for("profile"))
+
+            if action == "remove_picture":
+                pic_folder = os.path.join(app.root_path, "static", "profile_pics")
+                old_picture = user_row.get("profile_picture")
+                if old_picture:
+                    old_path = os.path.join(pic_folder, old_picture)
+                    if os.path.exists(old_path):
+                        try:
+                            os.remove(old_path)
+                        except OSError:
+                            pass
+                update_user_profile(current_user.id, profile_picture="")
+                flash("Profile picture removed.", "success")
+                return redirect(url_for("profile"))
+
+            if action != "update_profile":
+                # Unknown/unhandled action — do not fall through to the
+                # password-protected profile update logic below.
+                flash("Unknown action.", "danger")
+                return redirect(url_for("profile"))
+
+            # action == "update_profile" (username / password)
+            current_password = request.form.get("current_password") or ""
+            if not check_password_hash(user_row["password_hash"], current_password):
+                flash("Current password is incorrect.", "danger")
+                return redirect(url_for("profile"))
+
+            new_username = (request.form.get("username") or "").strip()
+            new_password = request.form.get("new_password") or ""
+            confirm_password = request.form.get("confirm_password") or ""
+
+            if not new_username:
+                flash("Username cannot be empty.", "danger")
+                return redirect(url_for("profile"))
+
+            if new_username != user_row["username"]:
+                existing = get_user_by_username(new_username)
+                if existing and str(existing["id"]) != str(current_user.id):
+                    flash("Username already taken.", "danger")
+                    return redirect(url_for("profile"))
+                update_user_profile(current_user.id, username=new_username)
+
+            if new_password or confirm_password:
+                if new_password != confirm_password:
+                    flash("New password and confirmation do not match.", "danger")
+                    return redirect(url_for("profile"))
+                if len(new_password) < 6:
+                    flash("New password must be at least 6 characters.", "danger")
+                    return redirect(url_for("profile"))
+                update_user_profile(current_user.id, password_hash=generate_password_hash(new_password))
+
+            flash("Profile updated successfully.", "success")
+            return redirect(url_for("profile"))
+
+        files = get_uploaded_files(current_owner_id())
+        return render_template(
+            "profile.html",
+            files=files,
+            selected_file=files[0] if files else None,
+            profile_user=user_row,
+            active_tab="profile",
+            twofa_enabled=is_2fa_enabled(current_user.id),
+            login_history=get_login_history(current_user.id, limit=10),
+        )
+
+    # ------------------------------------------------------------------
+    # Two-Factor Authentication (setup / verify / disable)
+    # ------------------------------------------------------------------
+
+    @app.route("/profile/2fa/setup", methods=["POST"])
+    @login_required
+    def twofa_setup():
+        """Generates a new pending TOTP secret + backup codes and shows the QR code."""
+        user_row = get_user_by_id(current_user.id)
+        secret = pyotp.random_base32()
+        backup_codes = [
+            "".join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+            for _ in range(8)
+        ]
+        start_2fa_setup(current_user.id, secret, backup_codes)
+
+        issuer = "Item List"
+        otp_uri = pyotp.TOTP(secret).provisioning_uri(name=user_row["username"], issuer_name=issuer)
+
+        qr_img = qrcode.make(otp_uri)
+        buf = BytesIO()
+        qr_img.save(buf, format="PNG")
+        qr_b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+
+        return render_template(
+            "twofa_setup.html",
+            secret=secret,
+            qr_b64=qr_b64,
+            backup_codes=backup_codes,
+            active_tab="profile",
+        )
+
+    @app.route("/profile/2fa/confirm", methods=["POST"])
+    @login_required
+    def twofa_confirm():
+        code = (request.form.get("code") or "").strip()
+        record = get_2fa_record(current_user.id)
+        if not record:
+            flash("Please start 2FA setup again.", "danger")
+            return redirect(url_for("profile"))
+
+        totp = pyotp.TOTP(record["secret"])
+        if not totp.verify(code.replace(" ", ""), valid_window=1):
+            flash("Invalid code. Please try again.", "danger")
+            return redirect(url_for("profile"))
+
+        confirm_2fa(current_user.id)
+        from app.services.db_service import log_action
+        log_action("enable_2fa", "user", current_user.id, "Enabled two-factor authentication.")
+        create_notification(
+            current_user.id,
+            "Two-factor authentication enabled",
+            "2FA is now protecting your account on every login.",
+            category="security",
+        )
+        flash("Two-factor authentication has been enabled.", "success")
+        return redirect(url_for("profile"))
+
+    @app.route("/profile/2fa/disable", methods=["POST"])
+    @login_required
+    def twofa_disable():
+        current_password = request.form.get("current_password") or ""
+        user_row = get_user_by_id(current_user.id)
+        if not check_password_hash(user_row["password_hash"], current_password):
+            flash("Current password is incorrect.", "danger")
+            return redirect(url_for("profile"))
+
+        disable_2fa(current_user.id)
+        from app.services.db_service import log_action
+        log_action("disable_2fa", "user", current_user.id, "Disabled two-factor authentication.")
+        create_notification(
+            current_user.id,
+            "Two-factor authentication disabled",
+            "2FA has been turned off for your account.",
+            category="security",
+        )
+        flash("Two-factor authentication has been disabled.", "success")
+        return redirect(url_for("profile"))
+
+    # ------------------------------------------------------------------
+    # Login History
+    # ------------------------------------------------------------------
+
+    @app.route("/profile/login-history")
+    @login_required
+    def login_history_route():
+        history = get_login_history(current_user.id, limit=100)
+        return render_template(
+            "login_history.html",
+            history=history,
+            active_tab="profile",
+        )
+
+    # ------------------------------------------------------------------
+    # Notifications
+    # ------------------------------------------------------------------
+
+    @app.route("/notifications")
+    @login_required
+    def notifications_route():
+        notifications = get_notifications(current_user.id, limit=50)
+        return jsonify({
+            "success": True,
+            "notifications": notifications,
+            "unread_count": get_unread_notification_count(current_user.id),
+        })
+
+    @app.route("/notifications/<int:notification_id>/read", methods=["POST"])
+    @login_required
+    def notification_mark_read_route(notification_id):
+        updated = mark_notification_read(notification_id, current_user.id)
+        return jsonify({
+            "success": updated,
+            "unread_count": get_unread_notification_count(current_user.id),
+        })
+
+    @app.route("/notifications/mark-all-read", methods=["POST"])
+    @login_required
+    def notifications_mark_all_read_route():
+        updated_count = mark_all_notifications_read(current_user.id)
+        return jsonify({
+            "success": True,
+            "updated_count": updated_count,
+            "unread_count": get_unread_notification_count(current_user.id),
+        })
+
+    @app.route("/notifications/<int:notification_id>/delete", methods=["POST"])
+    @login_required
+    def notification_delete_route(notification_id):
+        deleted = delete_notification(notification_id, current_user.id)
+        return jsonify({
+            "success": deleted,
+            "unread_count": get_unread_notification_count(current_user.id),
+        })
+
+    @app.route("/admin/devices/<device_id>/delete", methods=["POST"])
+    @login_required
+    def delete_device_route(device_id):
+        if current_user.role != "admin":
+            return jsonify({"success": False, "message": "Access denied"}), 403
+
+        removed = delete_active_device(device_id)
+        if removed:
+            from app.services.db_service import log_action
+            log_action(
+                "delete_device",
+                "device",
+                None,
+                f"Removed '{device_id}' from Status Activity",
+                device_id=g.device_id,
+                device_name=g.device_name,
+            )
+        return jsonify({"success": removed})
 
     @app.route("/signup", methods=["GET", "POST"])
     def signup():
@@ -900,7 +1268,7 @@ def register_routes(app):
             return jsonify({"success": False, "error": "No snapshots available"}), 404
             
         latest_snapshot = file_snapshots[0]["snapshot_name"]
-        restore_records_from_snapshot(latest_snapshot)
+        restore_records_from_snapshot(latest_snapshot, current_owner_id())
         return jsonify({"success": True})
 
     @app.route("/api/integration/accurate/sync", methods=["POST"])
