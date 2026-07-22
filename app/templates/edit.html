@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <form class="edit-page" method="post" action="{{ url_for('edit_record', record_id=record.id) }}">
+    <form class="edit-page" method="post" action="{{ url_for('edit_record', record_id=record.id) }}" data-record-id="{{ record.id }}">
         <div class="edit-head">
             <div>
                 <a class="back-link" href="{{ url_for('index', file_id=record.file_id) }}">Back to Table</a>
@@ -44,7 +44,7 @@
                     </label>
                     <label>
                         <span>Tag Number <b>*</b></span>
-                        <input name="tag_number" class="locked-field" value="{{ record.tag_number or '' }}" readonly required>
+                        <input name="tag_number" class="locked-field" data-toggle-lock="true" value="{{ record.tag_number or '' }}" readonly required>
                     </label>
                 </div>
 
@@ -54,11 +54,12 @@
                 </label>
 
                 <h3>Other Details</h3>
+                <p class="switch-hint" id="otherDetailsSyncStatus" style="display:none;"></p>
                 <div class="field-row">
                     {% for key, value in record.extra_data.items() %}
                         <label>
                             <span>{{ key|replace('_', ' ')|title }}</span>
-                            <input name="extra_{{ key }}" class="locked-field" value="{{ value }}" readonly>
+                            <input name="extra_{{ key }}" class="locked-field extra-field-input" data-toggle-lock="true" data-extra-key="{{ key }}" value="{{ value }}" readonly>
                         </label>
                     {% endfor %}
                 </div>

@@ -556,6 +556,8 @@ def register_routes(app):
                 set_setting("supabase_enabled", request.form.get("supabase_enabled", "0"))
                 set_setting("supabase_url", request.form.get("supabase_url", ""))
                 set_setting("supabase_key", request.form.get("supabase_key", ""))
+                set_setting("supabase_table", request.form.get("supabase_table", "listData"))
+                set_setting("supabase_match_column", request.form.get("supabase_match_column", "boccard_item_number"))
                 
                 flash("Settings saved", "success")
             elif action == "update_status":
@@ -617,6 +619,8 @@ def register_routes(app):
         supabase_enabled = get_setting("supabase_enabled", "0") == "1"
         supabase_url = get_setting("supabase_url", "")
         supabase_key = get_setting("supabase_key", "")
+        supabase_table = get_setting("supabase_table", "listData")
+        supabase_match_column = get_setting("supabase_match_column", "boccard_item_number")
         maintenance_mode = get_setting("maintenance_mode", "0") == "1"
         
         return render_template("admin.html", 
@@ -630,6 +634,8 @@ def register_routes(app):
                                supabase_enabled=supabase_enabled, 
                                supabase_url=supabase_url,
                                supabase_key=supabase_key,
+                               supabase_table=supabase_table,
+                               supabase_match_column=supabase_match_column,
                                maintenance_mode=maintenance_mode,
                                active_tab="admin")
 
@@ -908,6 +914,42 @@ def register_routes(app):
     @app.route("/api/integration/supabase/sync", methods=["POST"])
     def sync_supabase():
         return jsonify({"status": "success", "message": "Supabase sync simulation completed."})
+
+    @app.route("/api/integration/supabase/test", methods=["POST"])
+    def test_supabase_route():
+        from app.services.integrations import test_supabase_connection
+        result = test_supabase_connection(
+            url=request.form.get("supabase_url") or None,
+            key=request.form.get("supabase_key") or None,
+            table=request.form.get("supabase_table") or None,
+        )
+        return jsonify(result)
+
+    @app.route("/api/integration/accurate/test", methods=["POST"])
+    def test_accurate_route():
+        from app.services.integrations import test_accurate_credentials
+        result = test_accurate_credentials(
+            client_id=request.form.get("accurate_client_id") or None,
+            client_secret=request.form.get("accurate_client_secret") or None,
+        )
+        return jsonify(result)
+
+    @app.route("/records/other-details")
+    def other_details_route():
+        from app.services.integrations import fetch_other_details_by_boccard
+        record_id = request.args.get("record_id")
+        boccard_item_number = (request.args.get("boccard_item_number") or "").strip()
+        if not boccard_item_number:
+            return jsonify({"success": False, "data": {}, "error": None})
+
+        extra_data_keys = None
+        if record_id:
+            record = get_record(int(record_id))
+            if record:
+                extra_data_keys = list((record.get("extra_data") or {}).keys())
+
+        data, error = fetch_other_details_by_boccard(boccard_item_number, extra_data_keys)
+        return jsonify({"success": error is None, "data": data, "error": error})
 
     @app.route("/report/summary/<int:file_id>")
     def generate_summary_report(file_id):

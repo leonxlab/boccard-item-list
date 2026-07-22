@@ -22,8 +22,73 @@ function initPageControls() {
     initFilterPersistence();
     initEditTabCloseButtons();
     initTabReorder();
+    initIntegrationTests();
     applyLanguage(getCurrentLanguage());
     startDeviceHeartbeat();
+}
+
+function initIntegrationTests() {
+    var buttons = document.querySelectorAll('.integration-test-btn');
+    if (!buttons.length) {
+        return;
+    }
+
+    buttons.forEach(function (button) {
+        if (button.dataset.ready === 'true') {
+            return;
+        }
+        button.dataset.ready = 'true';
+
+        button.addEventListener('click', function () {
+            var integration = button.dataset.integration;
+            var resultBox = document.querySelector('[data-integration-result="' + integration + '"]');
+            var form = button.closest('form');
+            var formData = new FormData();
+
+            if (form) {
+                if (integration === 'supabase') {
+                    formData.set('supabase_url', form.querySelector('[name="supabase_url"]').value.trim());
+                    formData.set('supabase_key', form.querySelector('[name="supabase_key"]').value.trim());
+                    formData.set('supabase_table', form.querySelector('[name="supabase_table"]').value.trim());
+                } else if (integration === 'accurate') {
+                    formData.set('accurate_client_id', form.querySelector('[name="accurate_client_id"]').value.trim());
+                    formData.set('accurate_client_secret', form.querySelector('[name="accurate_client_secret"]').value.trim());
+                }
+            }
+
+            button.disabled = true;
+            var originalText = button.textContent;
+            button.textContent = 'Testing...';
+            if (resultBox) {
+                resultBox.style.display = 'block';
+                resultBox.style.color = '#555';
+                resultBox.textContent = 'Running test...';
+            }
+
+            fetch('/api/integration/' + integration + '/test', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'fetch', 'X-Device-Name': getDeviceName(), 'X-Device-ID': getDeviceId() }
+            })
+                .then(function (response) { return response.json(); })
+                .then(function (payload) {
+                    if (resultBox) {
+                        resultBox.style.color = payload.success ? '#198754' : '#dc3545';
+                        resultBox.textContent = (payload.success ? '\u2713 ' : '\u2717 ') + payload.message;
+                    }
+                })
+                .catch(function () {
+                    if (resultBox) {
+                        resultBox.style.color = '#dc3545';
+                        resultBox.textContent = '\u2717 Test request failed. Check the network connection and try again.';
+                    }
+                })
+                .finally(function () {
+                    button.disabled = false;
+                    button.textContent = originalText;
+                });
+        });
+    });
 }
 
 function getDeviceName() {
@@ -498,6 +563,10 @@ function initDesignationLookup() {
     var designationInput = document.getElementById('designationInput');
     var remarksField = document.querySelector('[data-designation-combo="remarks"]');
     var boccardField = document.querySelector('[data-designation-combo="boccard_items"]');
+    var form = document.querySelector('.edit-page');
+    var recordId = form ? form.dataset.recordId : null;
+    var otherDetailsStatus = document.getElementById('otherDetailsSyncStatus');
+    var lockableFields = document.querySelectorAll('[data-toggle-lock="true"]');
 
     if (!toggle || !designationInput || (!remarksField && !boccardField)) {
         return;
@@ -512,15 +581,69 @@ function initDesignationLookup() {
     var lookupCache = {};
     var lastValues = { remarks: [], boccard_items: [], pairs: [] };
     var boccardToRemarksMap = {};
+    var remarksToBoccardMap = {};
+    var otherDetailsDebounce = null;
 
-    function buildPairMap(pairs) {
-        var map = {};
+    function buildPairMaps(pairs) {
+        var toRemarks = {};
+        var toBoccard = {};
         (pairs || []).forEach(function (pair) {
             if (pair && pair.boccard_item_number && pair.remarks_in_pid) {
-                map[pair.boccard_item_number] = pair.remarks_in_pid;
+                toRemarks[pair.boccard_item_number] = pair.remarks_in_pid;
+                if (!(pair.remarks_in_pid in toBoccard)) {
+                    toBoccard[pair.remarks_in_pid] = pair.boccard_item_number;
+                }
             }
         });
-        return map;
+        return { toRemarks: toRemarks, toBoccard: toBoccard };
+    }
+
+    function showOtherDetailsStatus(message, isError) {
+        if (!otherDetailsStatus) {
+            return;
+        }
+        otherDetailsStatus.style.display = message ? 'block' : 'none';
+        otherDetailsStatus.style.color = isError ? '#dc3545' : '#64748b';
+        otherDetailsStatus.textContent = message || '';
+    }
+
+    function applyOtherDetailsForBoccardValue(value) {
+        if (!toggle.checked || !value) {
+            return;
+        }
+        window.clearTimeout(otherDetailsDebounce);
+        otherDetailsDebounce = window.setTimeout(function () {
+            var url = '/records/other-details?boccard_item_number=' + encodeURIComponent(value) +
+                (recordId ? '&record_id=' + encodeURIComponent(recordId) : '');
+            showOtherDetailsStatus('Syncing Other Details from Supabase...', false);
+            fetch(url, {
+                headers: { 'X-Requested-With': 'fetch', 'X-Device-Name': getDeviceName(), 'X-Device-ID': getDeviceId() }
+            })
+                .then(function (response) { return response.json(); })
+                .then(function (payload) {
+                    if (!payload.success) {
+                        showOtherDetailsStatus(payload.error || 'Could not sync Other Details from Supabase.', true);
+                        return;
+                    }
+                    var data = payload.data || {};
+                    var updated = 0;
+                    Object.keys(data).forEach(function (key) {
+                        var field = document.querySelector('.extra-field-input[data-extra-key="' + key + '"]');
+                        if (field && data[key] !== undefined && data[key] !== null && String(field.value) !== String(data[key])) {
+                            field.value = data[key];
+                            updated += 1;
+                        }
+                    });
+                    if (updated > 0) {
+                        showOtherDetailsStatus('Other Details synced from Supabase (' + updated + ' field(s) updated).', false);
+                    } else {
+                        showOtherDetailsStatus('', false);
+                    }
+                })
+                .catch(function () {
+                    showOtherDetailsStatus('Could not reach the Other Details service.', true);
+                });
+        }, 250);
     }
 
     function applyRemarksForBoccardValue(value) {
@@ -528,13 +651,28 @@ function initDesignationLookup() {
             return;
         }
         var match = boccardToRemarksMap[value];
+        if (match) {
+            var remarksInput = remarksField.querySelector('input');
+            if (remarksInput && remarksInput.value !== match) {
+                remarksInput.value = match;
+            }
+        }
+        applyOtherDetailsForBoccardValue(value);
+    }
+
+    function applyBoccardForRemarksValue(value) {
+        if (!toggle.checked || !boccardField) {
+            return;
+        }
+        var match = remarksToBoccardMap[value];
         if (!match) {
             return;
         }
-        var remarksInput = remarksField.querySelector('input');
-        if (remarksInput && remarksInput.value !== match) {
-            remarksInput.value = match;
+        var boccardInput = boccardField.querySelector('input');
+        if (boccardInput && boccardInput.value !== match) {
+            boccardInput.value = match;
         }
+        applyOtherDetailsForBoccardValue(match);
     }
 
     var stored = localStorage.getItem('boccardDesignationLookup');
@@ -549,7 +687,13 @@ function initDesignationLookup() {
         if (!enabled) {
             hideSuggestions(remarksField);
             hideSuggestions(boccardField);
+            showOtherDetailsStatus('', false);
         }
+        // When lookup is enabled, only Remarks / Boccard Item Number stay editable;
+        // everything else (Tag Number, Other Details) is locked. Designation always stays locked.
+        lockableFields.forEach(function (field) {
+            field.readOnly = enabled;
+        });
     }
 
     function hideSuggestions(field) {
@@ -584,6 +728,8 @@ function initDesignationLookup() {
                 list.hidden = true;
                 if (key === 'boccard_items') {
                     applyRemarksForBoccardValue(value);
+                } else if (key === 'remarks') {
+                    applyBoccardForRemarksValue(value);
                 }
             });
             list.appendChild(button);
@@ -595,11 +741,14 @@ function initDesignationLookup() {
         if (!fileId || !designation) {
             lastValues = { remarks: [], boccard_items: [], pairs: [] };
             boccardToRemarksMap = {};
+            remarksToBoccardMap = {};
             return Promise.resolve(lastValues);
         }
         if (lookupCache[designation]) {
             lastValues = lookupCache[designation];
-            boccardToRemarksMap = buildPairMap(lastValues.pairs);
+            var cachedMaps = buildPairMaps(lastValues.pairs);
+            boccardToRemarksMap = cachedMaps.toRemarks;
+            remarksToBoccardMap = cachedMaps.toBoccard;
             return Promise.resolve(lastValues);
         }
 
@@ -619,12 +768,15 @@ function initDesignationLookup() {
                 var values = { remarks: payload.remarks || [], boccard_items: payload.boccard_items || [], pairs: payload.pairs || [] };
                 lookupCache[designation] = values;
                 lastValues = values;
-                boccardToRemarksMap = buildPairMap(values.pairs);
+                var maps = buildPairMaps(values.pairs);
+                boccardToRemarksMap = maps.toRemarks;
+                remarksToBoccardMap = maps.toBoccard;
                 return values;
             })
             .catch(function () {
                 lastValues = { remarks: [], boccard_items: [], pairs: [] };
                 boccardToRemarksMap = {};
+                remarksToBoccardMap = {};
                 return lastValues;
             });
     }
@@ -682,6 +834,15 @@ function initDesignationLookup() {
                     return;
                 }
                 applyRemarksForBoccardValue(input.value.trim());
+            });
+        }
+
+        if (key === 'remarks') {
+            input.addEventListener('blur', function () {
+                if (!toggle.checked) {
+                    return;
+                }
+                applyBoccardForRemarksValue(input.value.trim());
             });
         }
     });
