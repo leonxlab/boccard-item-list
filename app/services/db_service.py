@@ -198,6 +198,13 @@ def init_db(upload_folder=None, temp_folder=None):
     )
     conn.execute("CREATE INDEX IF NOT EXISTS idx_login_history_user ON login_history(user_id, created_at)")
 
+    login_history_cols = {row[1] for row in conn.execute("PRAGMA table_info(login_history)").fetchall()}
+    if "reason" not in login_history_cols:
+        conn.execute("ALTER TABLE login_history ADD COLUMN reason TEXT")
+    if "device_id" not in login_history_cols:
+        conn.execute("ALTER TABLE login_history ADD COLUMN device_id TEXT")
+    if "device_name" not in login_history_cols:
+        conn.execute("ALTER TABLE login_history ADD COLUMN device_name TEXT")
 
     ordered_rows = conn.execute(
         "SELECT id, tab_order FROM uploaded_files ORDER BY tab_order ASC, uploaded_at ASC, id ASC"
