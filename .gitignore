@@ -1,6 +1,7 @@
 *.xlsx
 *.bat
 *.md
+!README.md
 *.txt
 !requirements.txt
 *.exe
